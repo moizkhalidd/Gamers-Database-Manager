@@ -136,6 +136,108 @@ class Database
         return root;
     }
     
+    Player* minValueNode(Player* node) 
+    {
+        Player* current = node;
+        while (current && current->left) 
+        current = current->left;
+        
+        return current;
+    }
+
+    Game* minValueNode(Game* node) 
+    {
+        Game* current = node;
+        while (current && current->left) 
+        current = current->left;
+        
+        return current;
+    }
+    
+    
+    Game* deleteGameHelper(Game* root, int id) 
+    {
+        if (!root) 
+        return nullptr;
+
+        if (id < root->gameID) 
+        {
+            root->left = deleteGameHelper(root->left, id);
+        } 
+        else if (id > root->gameID) 
+        {
+            root->right = deleteGameHelper(root->right, id);
+        } 
+        else 
+        {
+            if (!root->left) 
+            {
+                Game* temp = root->right;
+                delete root;
+                return temp;
+            } 
+            else if (!root->right) 
+            {
+                Game* temp = root->left;
+                delete root;
+                return temp;
+            }
+
+            Game* temp = minValueNode(root->right);
+            root->gameID = temp->gameID;
+            root->gameName = temp->gameName;
+            root->developer = temp->developer;
+            root->publisher = temp->publisher;
+            root->fileSize = temp->fileSize;
+            root->copiesSold = temp->copiesSold;
+
+            root->right = deleteGameHelper(root->right, temp->gameID);
+        }
+        return root;
+    }
+    
+    
+    Player* deletePlayerHelper(Player* root, int id) 
+    {
+        if (!root) 
+        return nullptr;
+
+        if (id < root->playerID) 
+        {
+            root->left = deletePlayerHelper(root->left, id);
+        } 
+        else if (id > root->playerID) 
+        {
+            root->right = deletePlayerHelper(root->right, id);
+        } 
+        else 
+        {
+            if (!root->left) 
+            {
+                Player* temp = root->right;
+                delete root;
+                return temp;
+            } 
+            else if (!root->right) 
+            {
+                Player* temp = root->left;
+                delete root;
+                return temp;
+            }
+
+            Player* temp = minValueNode(root->right);
+            root->playerID = temp->playerID;
+            root->playerName = temp->playerName;
+            root->phoneNumber = temp->phoneNumber;
+            root->email = temp->email;
+            root->password = temp->password;
+
+            root->right = deletePlayerHelper(root->right, temp->playerID);
+        }
+        return root;
+    }
+    
+    
     public: 
     
     void insertPlayer(int id, string name, string phone, string email, string password) 
@@ -188,6 +290,16 @@ class Database
         cout<<"Found \n";    
         return;
      }
+     
+     void deletePlayer(int id) 
+     {
+        playerRoot = deletePlayerHelper(playerRoot, id);
+     }
+
+    void deleteGame(int id) 
+    {
+        gameRoot = deleteGameHelper(gameRoot, id);
+    }
 };    
 int main()
 {
