@@ -136,6 +136,58 @@ class Database
         return root;
     }
     
+    public: 
+    
+    void insertPlayer(int id, string name, string phone, string email, string password) 
+    {
+        if (searchPlayer(playerRoot, id) != nullptr) 
+        {
+            cout << "Error: Player with ID " << id << " already exists.\n";
+            return;
+        }
+        
+        playerRoot = insertPlayerHelper(playerRoot, id, name, phone, email, password);
+        cout << "Inserted player with ID: " << id << endl;
+    }
+    
+    
+    void insertGame(int id, string name, string developer, string publisher, float size, int copiesSold) 
+    {
+        if (searchGame(gameRoot, id) != nullptr) 
+        {
+            cout << "Error: Game with ID " << id << " already exists.\n";
+            return;
+        }
+        
+        gameRoot = insertGameHelper(gameRoot, id, name, developer, publisher, size, copiesSold);
+        cout << "Inserted game with ID: " << id << endl;
+    }
+    
+     void searchPlayer(int id) 
+     {
+        if (searchPlayer(playerRoot, id) == nullptr) 
+        {
+            cout << "Error: Game with ID " << id << " does not exists.\n";
+            return;
+        }
+        
+        Player* player = searchPlayer(playerRoot, id);
+        cout<<"Found \n";    
+        return;
+     }
+
+     void searchGame(int id) 
+     { 
+        if (searchGame(gameRoot, id) == nullptr) 
+        {
+            cout << "Error: Game with ID " << id << " does not exists.\n";
+            return;
+        }
+        
+        Game* game = searchGame(gameRoot, id);
+        cout<<"Found \n";    
+        return;
+     }
 };    
 int main()
 {
