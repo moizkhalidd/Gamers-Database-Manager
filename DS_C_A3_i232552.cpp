@@ -228,7 +228,29 @@ class DatabasePlayer
       return false;
     }
 
-     
+    void showDetails(Player* player) 
+    {
+      if (!player) 
+      {
+         cout << "Player not found.\n";
+         return;
+      }
+
+      cout << "Player ID: " << player->playerID << endl;
+      cout << "Name: " << player->playerName << endl;
+      cout << "Phone: " << player->phoneNumber << endl;
+      cout << "Email: " << player->email << endl;
+
+      GamesPlayed* game = player->gamesHead;
+      cout << "Games Played:\n";
+      while (game) 
+      {
+          cout << "- Game ID: " << game->gameID
+               << ", Hours Played: " << game->hoursPlayed
+               << ", Achievements Unlocked: " << game->achievementsUnlocked << endl;
+          game = game->next;
+      }
+    }
 };
 class DatabaseGame
 {
