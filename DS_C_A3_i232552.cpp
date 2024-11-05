@@ -1,11 +1,12 @@
 #include <iostream>
 using namespace std;
+//structure for gamesplayed node
 struct GamesPlayed 
 {
     string gameID;
     float hoursPlayed;
     int achievementsUnlocked;
-    GamesPlayed *left = nullptr, *right = nullptr;
+    GamesPlayed *next = nullptr;
 
     GamesPlayed(string id, float hours, int achievements)
     {
@@ -15,6 +16,7 @@ struct GamesPlayed
     }
         
 };
+//structure for game node
 struct Game 
 {
     string gameID;
@@ -35,7 +37,7 @@ struct Game
        copiesSold = sold;
     }
 };
-
+//structure for player node
 struct Player 
 {
     string playerID;
@@ -54,7 +56,9 @@ struct Player
        email = mail; 
        password = pass;
     }
-        
+    
+    //function to add game to the game played list for the player 
+    //needs fixing by creating a separate tree for games played
     void addGame(string gameID, float hours, int achievements) 
     {
         GamesPlayed *newGame = new GamesPlayed(gameID, hours, achievements);
@@ -62,11 +66,13 @@ struct Player
         gamesHead = newGame;
     }
 };
+//BST for player 
 class DatabasePlayer  
 {
   private:
     Player *playerRoot = nullptr;
     
+    //generating custom seed
     int generateSeed(string &rollNumber) 
     {
       int seed = 0;
@@ -82,7 +88,7 @@ class DatabasePlayer
       return seed;
     }  
     
-    
+    //function to search player in the tree
     Player* searchPlayer(Player* root, string id) 
     {
         if (!root || root->playerID == id) 
@@ -94,6 +100,7 @@ class DatabasePlayer
         return searchPlayer(root->right, id);
     }
     
+    //function to add player in the tree
     Player* insertPlayerHelper(Player* root, string id, string name, string phone, string email, string password) 
     {
         if (!root) 
@@ -106,7 +113,8 @@ class DatabasePlayer
         
         return root;
     }
-
+    
+    //function to find the minimum id node 
     Player* minValueNode(Player* node) 
     {
         Player* current = node;
@@ -115,7 +123,8 @@ class DatabasePlayer
         
         return current;
     }
-
+    
+    //function to delete a node 
     Player* deletePlayerHelper(Player* root, string id) 
     {
         if (!root) 
@@ -130,7 +139,8 @@ class DatabasePlayer
             root->right = deletePlayerHelper(root->right, id);
         } 
         else 
-        {
+        {   
+            //if one to zero child nodes are there
             if (!root->left) 
             {
                 Player* temp = root->right;
@@ -143,7 +153,8 @@ class DatabasePlayer
                 delete root;
                 return temp;
             }
-
+            
+            //if node has 2 children
             Player* temp = minValueNode(root->right);
             root->playerID = temp->playerID;
             root->playerName = temp->playerName;
@@ -156,6 +167,7 @@ class DatabasePlayer
         return root;
     }
     
+    //function to show layer number for the node
     int showLayerNumberHelper(Player* root, string id) 
     {
        int layer = 1;
@@ -171,6 +183,7 @@ class DatabasePlayer
        return -1;
     }
     
+    //function to print path to the node
     bool showPathHelper(Player* root, string id) 
     {
       if (!root) 
@@ -193,6 +206,7 @@ class DatabasePlayer
       return false;
     }
     
+    //function to print details of a player
     void showDetailsHelper(Player* player) 
     {
       if (!player) 
@@ -275,6 +289,36 @@ class DatabasePlayer
         Player * p = searchPlayer(playerRoot, id);      
         return showDetailsHelper(p);
      }
+     
+     
+     //function to edit an entry in the tree
+     void editEntry(string oldID, string newID, string newName, string newEmail, string newPhone, string newPassword) 
+     {
+        Player* nodeToEdit = searchPlayer(playerRoot, oldID);
+
+        if (!nodeToEdit) 
+        {
+            cout << "Player with ID " << oldID << " not found." << endl;
+            return;
+        }
+
+        if (oldID != newID) 
+        {
+            playerRoot = deletePlayerHelper(playerRoot, oldID);
+            playerRoot = insertPlayerHelper(playerRoot, newID, newName, newEmail, newPhone, newPassword);
+            Player* newNode = searchPlayer(playerRoot, newID);
+            newNode->gamesHead = nodeToEdit->gamesHead;
+            delete nodeToEdit;
+        } 
+        else 
+        {
+            nodeToEdit->playerName = newName;
+            nodeToEdit->email = newEmail;
+            nodeToEdit->phoneNumber = newPhone;
+        }
+
+        cout << "Player entry updated successfully." << endl;
+    }
     
 };
 class DatabaseGame
@@ -283,6 +327,8 @@ class DatabaseGame
 
     Game *gameRoot = nullptr;
     
+    
+    //function to generate custom seed
     int generateSeed(string &rollNumber) 
     {
       int seed = 0;
@@ -298,7 +344,7 @@ class DatabaseGame
       return seed;
     }  
     
-    
+    //function to search game in the tree 
     Game* searchGame(Game* root, string id) 
     {
         if (!root || root->gameID == id) 
@@ -311,7 +357,7 @@ class DatabaseGame
     }
     
     
-  
+     //function to insert game in the tree
      Game* insertGameHelper(Game* root,string id, string name, string developer, string publisher, float size, int copiesSold) 
      {
         if (!root) 
@@ -325,7 +371,7 @@ class DatabaseGame
         return root;
     }
     
-
+    //function to get min id game node
     Game* minValueNode(Game* node) 
     {
         Game* current = node;
@@ -335,7 +381,7 @@ class DatabaseGame
         return current;
     }
     
-    
+    //function to delete node 
     Game* deleteGameHelper(Game* root, string id) 
     {
         if (!root) 
@@ -350,7 +396,8 @@ class DatabaseGame
             root->right = deleteGameHelper(root->right, id);
         } 
         else 
-        {
+        {   
+            //if node has 1 or 0 children
             if (!root->left) 
             {
                 Game* temp = root->right;
@@ -363,7 +410,8 @@ class DatabaseGame
                 delete root;
                 return temp;
             }
-
+        
+            //if node has 2 children
             Game* temp = minValueNode(root->right);
             root->gameID = temp->gameID;
             root->gameName = temp->gameName;
@@ -377,7 +425,7 @@ class DatabaseGame
         return root;
     }
     
-    
+    //function to show layer number for a node
     int showLayerNumberHelper(Game* root, string id) 
     {
        int layer = 1;
@@ -393,6 +441,7 @@ class DatabaseGame
        return -1;
     }
     
+    //function to show path to the node
     bool showPathHelper(Game* root, string id) 
     {
       if (!root) 
@@ -404,12 +453,12 @@ class DatabaseGame
 
       if (id < root->gameID) 
       {
-         if (showPath(root->left, id)) 
+         if (showPathHelper(root->left, id)) 
          return true;
       } 
       else 
       {
-         if (showPath(root->right, id)) 
+         if (showPathHelper(root->right, id)) 
          return true;
       }
       return false;
