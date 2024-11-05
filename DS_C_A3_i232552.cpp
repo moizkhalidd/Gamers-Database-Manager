@@ -63,11 +63,10 @@ struct Player
         gamesHead = newGame;
     }
 };
-class Database 
+class DatabasePlayer  
 {
   private:
     Player *playerRoot = nullptr;
-    Game *gameRoot = nullptr;
     
     int generateSeed(string &rollNumber) 
     {
@@ -95,19 +94,6 @@ class Database
         
         return searchPlayer(root->right, id);
     }
-
-
-    Game* searchGame(Game* root, int id) 
-    {
-        if (!root || root->gameID == id) 
-        return root;
-        
-        if (id < root->gameID) 
-        return searchGame(root->left, id);
-        
-        return searchGame(root->right, id);
-    }
-    
     
     Player* insertPlayerHelper(Player* root, int id, string name, string phone, string email, string password) 
     {
@@ -121,21 +107,7 @@ class Database
         
         return root;
     }
-    
-    
-     Game* insertGameHelper(Game* root, int id, string name, string developer, string publisher, float size, int copiesSold) 
-     {
-        if (!root) 
-        return new Game(id, name, developer, publisher, size, copiesSold);
-        
-        if (id < root->gameID) 
-        root->left = insertGameHelper(root->left, id, name, developer, publisher, size, copiesSold);
-        else if (id > root->gameID) 
-        root->right = insertGameHelper(root->right, id, name, developer, publisher, size, copiesSold);
-        
-        return root;
-    }
-    
+
     Player* minValueNode(Player* node) 
     {
         Player* current = node;
@@ -145,58 +117,6 @@ class Database
         return current;
     }
 
-    Game* minValueNode(Game* node) 
-    {
-        Game* current = node;
-        while (current && current->left) 
-        current = current->left;
-        
-        return current;
-    }
-    
-    
-    Game* deleteGameHelper(Game* root, int id) 
-    {
-        if (!root) 
-        return nullptr;
-
-        if (id < root->gameID) 
-        {
-            root->left = deleteGameHelper(root->left, id);
-        } 
-        else if (id > root->gameID) 
-        {
-            root->right = deleteGameHelper(root->right, id);
-        } 
-        else 
-        {
-            if (!root->left) 
-            {
-                Game* temp = root->right;
-                delete root;
-                return temp;
-            } 
-            else if (!root->right) 
-            {
-                Game* temp = root->left;
-                delete root;
-                return temp;
-            }
-
-            Game* temp = minValueNode(root->right);
-            root->gameID = temp->gameID;
-            root->gameName = temp->gameName;
-            root->developer = temp->developer;
-            root->publisher = temp->publisher;
-            root->fileSize = temp->fileSize;
-            root->copiesSold = temp->copiesSold;
-
-            root->right = deleteGameHelper(root->right, temp->gameID);
-        }
-        return root;
-    }
-    
-    
     Player* deletePlayerHelper(Player* root, int id) 
     {
         if (!root) 
@@ -252,19 +172,7 @@ class Database
         cout << "Inserted player with ID: " << id << endl;
     }
     
-    
-    void insertGame(int id, string name, string developer, string publisher, float size, int copiesSold) 
-    {
-        if (searchGame(gameRoot, id) != nullptr) 
-        {
-            cout << "Error: Game with ID " << id << " already exists.\n";
-            return;
-        }
-        
-        gameRoot = insertGameHelper(gameRoot, id, name, developer, publisher, size, copiesSold);
-        cout << "Inserted game with ID: " << id << endl;
-    }
-    
+ 
      void searchPlayer(int id) 
      {
         if (searchPlayer(playerRoot, id) == nullptr) 
@@ -278,6 +186,127 @@ class Database
         return;
      }
 
+   
+     void deletePlayer(int id) 
+     {
+        playerRoot = deletePlayerHelper(playerRoot, id);
+     }
+};
+class DatabaseGame
+{
+   private:
+
+    Game *gameRoot = nullptr;
+    
+    int generateSeed(string &rollNumber) 
+    {
+      int seed = 0;
+      for (int i = 0; i < rollNumber.length(); ++i) 
+      {
+        char ch = rollNumber[i];
+        if (ch >= '0' && ch <= '9') 
+        {
+            seed = seed * 10 + (ch - '0');
+        }
+      }
+
+      return seed;
+    }  
+    
+    
+    Game* searchGame(Game* root, int id) 
+    {
+        if (!root || root->gameID == id) 
+        return root;
+        
+        if (id < root->gameID) 
+        return searchGame(root->left, id);
+        
+        return searchGame(root->right, id);
+    }
+    
+    
+  
+     Game* insertGameHelper(Game* root, int id, string name, string developer, string publisher, float size, int copiesSold) 
+     {
+        if (!root) 
+        return new Game(id, name, developer, publisher, size, copiesSold);
+        
+        if (id < root->gameID) 
+        root->left = insertGameHelper(root->left, id, name, developer, publisher, size, copiesSold);
+        else if (id > root->gameID) 
+        root->right = insertGameHelper(root->right, id, name, developer, publisher, size, copiesSold);
+        
+        return root;
+    }
+    
+
+    Game* minValueNode(Game* node) 
+    {
+        Game* current = node;
+        while (current && current->left) 
+        current = current->left;
+        
+        return current;
+    }
+    
+    
+    Game* deleteGameHelper(Game* root, int id) 
+    {
+        if (!root) 
+        return nullptr;
+
+        if (id < root->gameID) 
+        {
+            root->left = deleteGameHelper(root->left, id);
+        } 
+        else if (id > root->gameID) 
+        {
+            root->right = deleteGameHelper(root->right, id);
+        } 
+        else 
+        {
+            if (!root->left) 
+            {
+                Game* temp = root->right;
+                delete root;
+                return temp;
+            } 
+            else if (!root->right) 
+            {
+                Game* temp = root->left;
+                delete root;
+                return temp;
+            }
+
+            Game* temp = minValueNode(root->right);
+            root->gameID = temp->gameID;
+            root->gameName = temp->gameName;
+            root->developer = temp->developer;
+            root->publisher = temp->publisher;
+            root->fileSize = temp->fileSize;
+            root->copiesSold = temp->copiesSold;
+
+            root->right = deleteGameHelper(root->right, temp->gameID);
+        }
+        return root;
+    }
+    
+   
+    public: 
+     
+    void insertGame(int id, string name, string developer, string publisher, float size, int copiesSold) 
+    {
+        if (searchGame(gameRoot, id) != nullptr) 
+        {
+            cout << "Error: Game with ID " << id << " already exists.\n";
+            return;
+        }
+        
+        gameRoot = insertGameHelper(gameRoot, id, name, developer, publisher, size, copiesSold);
+        cout << "Inserted game with ID: " << id << endl;
+    }
+    
      void searchGame(int id) 
      { 
         if (searchGame(gameRoot, id) == nullptr) 
@@ -290,17 +319,12 @@ class Database
         cout<<"Found \n";    
         return;
      }
-     
-     void deletePlayer(int id) 
-     {
-        playerRoot = deletePlayerHelper(playerRoot, id);
-     }
 
     void deleteGame(int id) 
     {
         gameRoot = deleteGameHelper(gameRoot, id);
     }
-};    
+};
 int main()
 {
 
