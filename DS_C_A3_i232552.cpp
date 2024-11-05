@@ -5,7 +5,7 @@ struct GamesPlayed
     string gameID;
     float hoursPlayed;
     int achievementsUnlocked;
-    GamesPlayed *next = nullptr;
+    GamesPlayed *left = nullptr, *right = nullptr;
 
     GamesPlayed(string id, float hours, int achievements)
     {
@@ -17,7 +17,7 @@ struct GamesPlayed
 };
 struct Game 
 {
-    int gameID;
+    string gameID;
     string gameName;
     string developer;
     string publisher;
@@ -25,7 +25,7 @@ struct Game
     int copiesSold;
     Game *left = nullptr, *right = nullptr;
 
-    Game(int id, string name, string dev, string pub, float size, int sold) 
+    Game(string id, string name, string dev, string pub, float size, int sold) 
     {
        gameID = id; 
        gameName = name;
@@ -38,7 +38,7 @@ struct Game
 
 struct Player 
 {
-    int playerID;
+    string playerID;
     string playerName;
     string phoneNumber;
     string email;
@@ -46,7 +46,7 @@ struct Player
     Player *left = nullptr, *right= nullptr;
     GamesPlayed *gamesHead = nullptr;
 
-    Player(int id, string name, string phone, string mail, string pass)
+    Player(string id, string name, string phone, string mail, string pass)
     {
        playerID = id; 
        playerName = name;
@@ -83,7 +83,7 @@ class DatabasePlayer
     }  
     
     
-    Player* searchPlayer(Player* root, int id) 
+    Player* searchPlayer(Player* root, string id) 
     {
         if (!root || root->playerID == id) 
         return root;
@@ -94,7 +94,7 @@ class DatabasePlayer
         return searchPlayer(root->right, id);
     }
     
-    Player* insertPlayerHelper(Player* root, int id, string name, string phone, string email, string password) 
+    Player* insertPlayerHelper(Player* root, string id, string name, string phone, string email, string password) 
     {
         if (!root) 
         return new Player(id, name, phone, email, password);
@@ -116,7 +116,7 @@ class DatabasePlayer
         return current;
     }
 
-    Player* deletePlayerHelper(Player* root, int id) 
+    Player* deletePlayerHelper(Player* root, string id) 
     {
         if (!root) 
         return nullptr;
@@ -156,42 +156,7 @@ class DatabasePlayer
         return root;
     }
     
-    
-    public: 
-    
-    void insertPlayer(int id, string name, string phone, string email, string password) 
-    {
-        if (searchPlayer(playerRoot, id) != nullptr) 
-        {
-            cout << "Error: Player with ID " << id << " already exists.\n";
-            return;
-        }
-        
-        playerRoot = insertPlayerHelper(playerRoot, id, name, phone, email, password);
-        cout << "Inserted player with ID: " << id << endl;
-    }
-    
- 
-     void searchPlayer(int id) 
-     {
-        if (searchPlayer(playerRoot, id) == nullptr) 
-        {
-            cout << "Error: Game with ID " << id << " does not exists.\n";
-            return;
-        }
-        
-        Player* player = searchPlayer(playerRoot, id);
-        cout<<"Found \n";    
-        return;
-     }
-
-   
-     void deletePlayer(int id) 
-     {
-        playerRoot = deletePlayerHelper(playerRoot, id);
-     }
-     
-    int showLayerNumber(Player* root, int id) 
+    int showLayerNumberHelper(Player* root, string id) 
     {
        int layer = 1;
        while (root) 
@@ -205,8 +170,8 @@ class DatabasePlayer
        cout << "Player with ID " << id << " does not exist.\n";
        return -1;
     }
-
-    bool showPath(Player* root, int id) 
+    
+    bool showPathHelper(Player* root, string id) 
     {
       if (!root) 
       return false;
@@ -217,18 +182,18 @@ class DatabasePlayer
 
       if (id < root->playerID) 
       {
-         if (showPath(root->left, id)) 
+         if (showPathHelper(root->left, id)) 
          return true;
       } 
       else 
       {
-         if (showPath(root->right, id)) 
+         if (showPathHelper(root->right, id)) 
          return true;
       }
       return false;
     }
-
-    void showDetails(Player* player) 
+    
+    void showDetailsHelper(Player* player) 
     {
       if (!player) 
       {
@@ -251,6 +216,66 @@ class DatabasePlayer
           game = game->next;
       }
     }
+    
+    public: 
+    
+    void insertPlayer(string id, string name, string phone, string email, string password) 
+    {
+        if (searchPlayer(playerRoot, id) != nullptr) 
+        {
+            cout << "Error: Player with ID " << id << " already exists.\n";
+            return;
+        }
+        
+        playerRoot = insertPlayerHelper(playerRoot, id, name, phone, email, password);
+        cout << "Inserted player with ID: " << id << endl;
+    }
+    
+ 
+     void searchPlayer(string id) 
+     {
+        if (searchPlayer(playerRoot, id) == nullptr) 
+        {
+            cout << "Error: Game with ID " << id << " does not exists.\n";
+            return;
+        }
+        
+        Player* player = searchPlayer(playerRoot, id);
+        cout<<"Found \n";    
+        return;
+     }
+     
+   
+     void deletePlayer(string id) 
+     {
+        playerRoot = deletePlayerHelper(playerRoot, id);
+     }
+     
+     
+     int showLayerNumber(string id)
+     {
+        return showLayerNumberHelper(playerRoot, id);
+     }
+
+    
+     void showPath(string id)
+     {
+       bool found;
+       
+       found = showPathHelper(playerRoot, id);
+       
+       if(found)
+       cout<<"Player Found"<<endl;
+       else
+       cout<<"Player not Found"<<endl;
+     }
+    
+     void showDetails(string id)
+     {
+        Player * p = searchPlayer(playerRoot, id);      
+        return showDetailsHelper(p);
+     }
+    
 };
 class DatabaseGame
 {
@@ -274,7 +299,7 @@ class DatabaseGame
     }  
     
     
-    Game* searchGame(Game* root, int id) 
+    Game* searchGame(Game* root, string id) 
     {
         if (!root || root->gameID == id) 
         return root;
@@ -287,7 +312,7 @@ class DatabaseGame
     
     
   
-     Game* insertGameHelper(Game* root, int id, string name, string developer, string publisher, float size, int copiesSold) 
+     Game* insertGameHelper(Game* root,string id, string name, string developer, string publisher, float size, int copiesSold) 
      {
         if (!root) 
         return new Game(id, name, developer, publisher, size, copiesSold);
@@ -311,7 +336,7 @@ class DatabaseGame
     }
     
     
-    Game* deleteGameHelper(Game* root, int id) 
+    Game* deleteGameHelper(Game* root, string id) 
     {
         if (!root) 
         return nullptr;
@@ -352,40 +377,8 @@ class DatabaseGame
         return root;
     }
     
-   
-    public: 
-     
-    void insertGame(int id, string name, string developer, string publisher, float size, int copiesSold) 
-    {
-        if (searchGame(gameRoot, id) != nullptr) 
-        {
-            cout << "Error: Game with ID " << id << " already exists.\n";
-            return;
-        }
-        
-        gameRoot = insertGameHelper(gameRoot, id, name, developer, publisher, size, copiesSold);
-        cout << "Inserted game with ID: " << id << endl;
-    }
     
-     void searchGame(int id) 
-     { 
-        if (searchGame(gameRoot, id) == nullptr) 
-        {
-            cout << "Error: Game with ID " << id << " does not exists.\n";
-            return;
-        }
-        
-        Game* game = searchGame(gameRoot, id);
-        cout<<"Found \n";    
-        return;
-     }
-
-    void deleteGame(int id) 
-    {
-        gameRoot = deleteGameHelper(gameRoot, id);
-    }
-    
-    int showLayerNumber(Game* root, int id) 
+    int showLayerNumberHelper(Game* root, string id) 
     {
        int layer = 1;
        while (root) 
@@ -400,8 +393,7 @@ class DatabaseGame
        return -1;
     }
     
-    
-    bool showPath(Game* root, int id) 
+    bool showPathHelper(Game* root, string id) 
     {
       if (!root) 
       return false;
@@ -422,6 +414,55 @@ class DatabaseGame
       }
       return false;
     }
+    public: 
+     
+    void insertGame(string id, string name, string developer, string publisher, float size, int copiesSold) 
+    {
+        if (searchGame(gameRoot, id) != nullptr) 
+        {
+            cout << "Error: Game with ID " << id << " already exists.\n";
+            return;
+        }
+        
+        gameRoot = insertGameHelper(gameRoot, id, name, developer, publisher, size, copiesSold);
+        cout << "Inserted game with ID: " << id << endl;
+    }
+    
+     void searchGame(string id) 
+     { 
+        if (searchGame(gameRoot, id) == nullptr) 
+        {
+            cout << "Error: Game with ID " << id << " does not exists.\n";
+            return;
+        }
+        
+        Game* game = searchGame(gameRoot, id);
+        cout<<"Found \n";    
+        return;
+     }
+
+    void deleteGame(string id) 
+    {
+        gameRoot = deleteGameHelper(gameRoot, id);
+    }
+    
+    int showLayerNumber(string id)
+    {
+      return showLayerNumberHelper(gameRoot, id);
+    }
+      
+    void showPath(string id)
+     {
+       bool found;
+       
+       found = showPathHelper(gameRoot, id);
+       
+       if(found)
+       cout<<"Game Found"<<endl;
+       else
+       cout<<"Game not Found"<<endl;
+     }
+    
 };
 int main()
 {
