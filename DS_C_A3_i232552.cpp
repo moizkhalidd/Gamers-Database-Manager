@@ -206,7 +206,28 @@ class DatabasePlayer
        return -1;
     }
 
-     
+    bool showPath(Player* root, int id) 
+    {
+      if (!root) 
+      return false;
+
+      cout << root->playerID << " ";  
+      if (root->playerID == id) 
+      return true;
+
+      if (id < root->playerID) 
+      {
+         if (showPath(root->left, id)) 
+         return true;
+      } 
+      else 
+      {
+         if (showPath(root->right, id)) 
+         return true;
+      }
+      return false;
+    }
+
      
 };
 class DatabaseGame
@@ -355,6 +376,29 @@ class DatabaseGame
        }
        cout << "Game with ID " << id << " does not exist.\n";
        return -1;
+    }
+    
+    
+    bool showPath(Game* root, int id) 
+    {
+      if (!root) 
+      return false;
+
+      cout << root->gameID << " ";  
+      if (root->gameID == id) 
+      return true;
+
+      if (id < root->gameID) 
+      {
+         if (showPath(root->left, id)) 
+         return true;
+      } 
+      else 
+      {
+         if (showPath(root->right, id)) 
+         return true;
+      }
+      return false;
     }
 };
 int main()
