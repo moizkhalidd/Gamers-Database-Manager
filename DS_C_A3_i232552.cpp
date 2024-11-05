@@ -15,7 +15,6 @@ struct GamesPlayed
     }
         
 };
-
 struct Game 
 {
     int gameID;
@@ -191,6 +190,24 @@ class DatabasePlayer
      {
         playerRoot = deletePlayerHelper(playerRoot, id);
      }
+     
+    int showLayerNumber(Player* root, int id) 
+    {
+       int layer = 1;
+       while (root) 
+       {
+          if (root->playerID == id) 
+          return layer;
+
+          root = (id < root->playerID) ? root->left : root->right;
+          layer++;
+       }
+       cout << "Player with ID " << id << " does not exist.\n";
+       return -1;
+    }
+
+     
+     
 };
 class DatabaseGame
 {
@@ -323,6 +340,21 @@ class DatabaseGame
     void deleteGame(int id) 
     {
         gameRoot = deleteGameHelper(gameRoot, id);
+    }
+    
+    int showLayerNumber(Game* root, int id) 
+    {
+       int layer = 1;
+       while (root) 
+       {
+          if (root->gameID == id) 
+          return layer;
+
+          root = (id < root->gameID) ? root->left : root->right;
+          layer++;
+       }
+       cout << "Game with ID " << id << " does not exist.\n";
+       return -1;
     }
 };
 int main()
