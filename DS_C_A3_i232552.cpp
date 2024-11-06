@@ -60,18 +60,52 @@ struct Player
     //function to add game to the game played list for the player 
     //needs fixing by creating a separate tree for games played
     void addGame(string gameID, float hours, int achievements) 
-    {
+    {   
+        if(searchGame(gameID) != nullptr)
+        {
+         cout<<"ID already exists"<<endl;
+         return;
+        }
         GamesPlayed *newGame = new GamesPlayed(gameID, hours, achievements);
-        newGame -> next = gamesHead;
+        if(gamesHead == nullptr)
         gamesHead = newGame;
+        else
+        {
+         GamesPlayed *temp = gamesHead;
+         while(temp -> next!= nullptr)
+         {
+           temp = temp -> next;
+         }       
+          temp -> next = newGame;
+        }
     }
+    
+    GamesPlayed* searchGame(string id) 
+    {
+        if (!gamesHead) 
+        return gamesHead;
+        
+        GamesPlayed *temp = gamesHead;
+        while(temp != nullptr)
+        { 
+          if(temp -> gameID == id)
+          return temp;
+          
+          temp = temp -> next;
+        }
+        
+        return temp;
+    }
+    
 };
 struct QueueNode {
     Player* treeNode;
+    Game* treeNode2;
     int depth;
     QueueNode* next;
 
     QueueNode(Player* node, int dep) : treeNode(node), depth(dep), next(nullptr) {}
+    QueueNode(Game* node, int dep) : treeNode2(node), depth(dep), next(nullptr) {}
 };
 class Queue {
     QueueNode* front;
@@ -85,6 +119,17 @@ public:
     }
 
     void enqueue(Player* node, int depth) {
+        QueueNode* newNode = new QueueNode(node, depth);
+        if (rear) {
+            rear->next = newNode;
+        }
+        rear = newNode;
+        if (!front) {
+            front = newNode;
+        }
+    }
+    
+    void enqueue(Game* node, int depth) {
         QueueNode* newNode = new QueueNode(node, depth);
         if (rear) {
             rear->next = newNode;
@@ -142,9 +187,29 @@ class DatabasePlayer
     //function to add player in the tree
     Player* insertPlayerHelper(Player* root, string id, string name, string phone, string email, string password) 
     {
-        if (!root) 
-        return new Player(id, name, phone, email, password);
-        
+        if (!root)
+        { 
+          Player* player = new Player(id, name, phone, email, password);
+          string inp;
+          cout<<"Enter yes to add games played details"<<endl;
+          cin>> inp;
+          while(inp == "yes")
+          {
+            string ID;
+            float time;
+            int ach;
+            cout<<"Enter GameID"<<endl;
+            cin>>ID;
+            cout<<"Enter Hours Played"<<endl;
+            cin>>time;
+            cout<<"Enter Achievements"<<endl;
+            cin>>ach;
+            player -> addGame(ID,time,ach);
+            cout<<"Add more?"<<endl;
+            cin>> inp;
+          }
+          return player;
+        }
         if (stringToInt(id) < stringToInt(root->playerID)) 
         root->left = insertPlayerHelper(root->left, id, name, phone, email, password);
         else if (stringToInt(id) > stringToInt(root->playerID)) 
@@ -271,6 +336,7 @@ class DatabasePlayer
     }
     
     int stringToInt(string& str) {
+  
     int result = 0;
     bool isNegative = false;
     int startIndex = 0;
@@ -285,12 +351,13 @@ class DatabasePlayer
         char ch = str[i];
         
         // Ensure the character is a digit
-        if (ch < '0' || ch > '9') {
-            std::cerr << "Invalid character in input string.\n";
-            return 0;
-        }
+        //if (ch < '0' || ch > '9') {
+          //  cout << "Invalid character in input string.\n";
+            //return 0;
+        //}
         
         // Update result by shifting the existing digits left and adding the new digit
+        if (ch >= '0' && ch <= '9')
         result = result * 10 + (ch - '0');
     }
 
@@ -298,7 +365,7 @@ class DatabasePlayer
     if (isNegative) {
         result = -result;
     }
-
+    
     return result;
 }
     
@@ -669,10 +736,72 @@ class DatabaseGame
        else
        cout<<"Game not Found"<<endl;
      }
+     
+     
+     void showNLayersHelper(int N) {
+        if (!gameRoot) {
+            cout << "Tree is empty." << endl;
+            return;
+        }
+
+        // Linked list-based queue
+        Queue queue;
+        queue.enqueue(gameRoot, 1);  // Start with the root node at depth 1
+        int currentLayer = 1;
+        int maxLayerReached = 0;
+
+        while (!queue.isEmpty()) {
+            QueueNode* nodeData = queue.dequeue();
+            Player* current = nodeData->treeNode;
+            int depth = nodeData->depth;
+            delete nodeData; // Free memory
+
+            // Check if we are within the layer limit
+            if (depth > N) {
+                cout << "\nLayer Limit was Reached, can’t go further" << endl;
+                break;
+            }
+
+            // Print player info layer by layer
+            if (depth > currentLayer) {
+                cout << "\nLayer " << depth << ": ";
+                currentLayer = depth;
+            }
+
+            cout << "[" << current->playerID << ": " << current->playerName << "] ";
+
+            // Add left and right children to the queue
+            if (current->left) queue.enqueue(current->left, depth + 1);
+            if (current->right) queue.enqueue(current->right, depth + 1);
+
+            maxLayerReached = depth;
+        }
+
+        // Warning if the tree depth < N
+        if (maxLayerReached < N) {
+            cout << "\nLayer Limit was Reached, can’t go further" << endl;
+        }
+
+        cout << endl;
+    }
     
 };
 int main()
 {
+   DatabasePlayer db;
 
-  return 0;
+    // Insert some players
+    db.insertPlayer("P001", "Alice", "1234567890", "alice@example.com", "password123");
+    db.insertPlayer("P002", "Bob", "0987654321", "bob@example.com", "password456");
+    //db.insertPlayer("P003", "Charlie", "5555555555", "charlie@example.com", "password789");
+
+
+   
+    // Show details of a player
+    cout << "\nShowing details of player P001:" << endl;
+    db.showDetails("P001");
+
+    
+
+    return 0;
 }
