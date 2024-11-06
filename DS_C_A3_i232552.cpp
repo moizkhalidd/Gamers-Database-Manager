@@ -66,6 +66,45 @@ struct Player
         gamesHead = newGame;
     }
 };
+struct QueueNode {
+    Player* treeNode;
+    int depth;
+    QueueNode* next;
+
+    QueueNode(Player* node, int dep) : treeNode(node), depth(dep), next(nullptr) {}
+};
+class Queue {
+    QueueNode* front;
+    QueueNode* rear;
+
+public:
+    Queue() : front(nullptr), rear(nullptr) {}
+
+    bool isEmpty() {
+        return front == nullptr;
+    }
+
+    void enqueue(Player* node, int depth) {
+        QueueNode* newNode = new QueueNode(node, depth);
+        if (rear) {
+            rear->next = newNode;
+        }
+        rear = newNode;
+        if (!front) {
+            front = newNode;
+        }
+    }
+
+    QueueNode* dequeue() {
+        if (isEmpty()) return nullptr;
+        QueueNode* temp = front;
+        front = front->next;
+        if (!front) {
+            rear = nullptr;
+        }
+        return temp;
+    }
+};
 //BST for player 
 class DatabasePlayer  
 {
@@ -94,7 +133,7 @@ class DatabasePlayer
         if (!root || root->playerID == id) 
         return root;
         
-        if (id < root->playerID) 
+        if (stringToInt(id) < stringToInt(root->playerID)) 
         return searchPlayer(root->left, id);
         
         return searchPlayer(root->right, id);
@@ -106,9 +145,9 @@ class DatabasePlayer
         if (!root) 
         return new Player(id, name, phone, email, password);
         
-        if (id < root->playerID) 
+        if (stringToInt(id) < stringToInt(root->playerID)) 
         root->left = insertPlayerHelper(root->left, id, name, phone, email, password);
-        else if (id > root->playerID) 
+        else if (stringToInt(id) > stringToInt(root->playerID)) 
         root->right = insertPlayerHelper(root->right, id, name, phone, email, password);
         
         return root;
@@ -130,11 +169,11 @@ class DatabasePlayer
         if (!root) 
         return nullptr;
 
-        if (id < root->playerID) 
+        if (stringToInt(id) < stringToInt(root->playerID)) 
         {
             root->left = deletePlayerHelper(root->left, id);
         } 
-        else if (id > root->playerID) 
+        else if (stringToInt(id) > stringToInt(root->playerID)) 
         {
             root->right = deletePlayerHelper(root->right, id);
         } 
@@ -176,10 +215,10 @@ class DatabasePlayer
           if (root->playerID == id) 
           return layer;
 
-          root = (id < root->playerID) ? root->left : root->right;
+          root = (stringToInt(id) < stringToInt(root->playerID)) ? root->left : root->right;
           layer++;
        }
-       cout << "Player with ID " << id << " does not exist.\n";
+       cout << "\nPlayer with ID " << id << " does not exist.\n";
        return -1;
     }
     
@@ -230,6 +269,39 @@ class DatabasePlayer
           game = game->next;
       }
     }
+    
+    int stringToInt(string& str) {
+    int result = 0;
+    bool isNegative = false;
+    int startIndex = 0;
+
+    // Check if the string has a negative sign
+    if (str[0] == '-') {
+        isNegative = true;
+        startIndex = 1; // Start from the next character
+    }
+
+    for (int i = startIndex; i < str.length(); ++i) {
+        char ch = str[i];
+        
+        // Ensure the character is a digit
+        if (ch < '0' || ch > '9') {
+            std::cerr << "Invalid character in input string.\n";
+            return 0;
+        }
+        
+        // Update result by shifting the existing digits left and adding the new digit
+        result = result * 10 + (ch - '0');
+    }
+
+    // Apply negative sign if necessary
+    if (isNegative) {
+        result = -result;
+    }
+
+    return result;
+}
+    
     
     public: 
     
@@ -320,6 +392,57 @@ class DatabasePlayer
         cout << "Player entry updated successfully." << endl;
     }
     
+    
+    //testttttttttttttttttttttttttttttttttttttttttttttttt
+    
+    void showNLayersHelper(int N) {
+        if (!playerRoot) {
+            cout << "Tree is empty." << endl;
+            return;
+        }
+
+        // Linked list-based queue
+        Queue queue;
+        queue.enqueue(playerRoot, 1);  // Start with the root node at depth 1
+        int currentLayer = 1;
+        int maxLayerReached = 0;
+
+        while (!queue.isEmpty()) {
+            QueueNode* nodeData = queue.dequeue();
+            Player* current = nodeData->treeNode;
+            int depth = nodeData->depth;
+            delete nodeData; // Free memory
+
+            // Check if we are within the layer limit
+            if (depth > N) {
+                cout << "\nLayer Limit was Reached, can’t go further" << endl;
+                break;
+            }
+
+            // Print player info layer by layer
+            if (depth > currentLayer) {
+                cout << "\nLayer " << depth << ": ";
+                currentLayer = depth;
+            }
+
+            cout << "[" << current->playerID << ": " << current->playerName << "] ";
+
+            // Add left and right children to the queue
+            if (current->left) queue.enqueue(current->left, depth + 1);
+            if (current->right) queue.enqueue(current->right, depth + 1);
+
+            maxLayerReached = depth;
+        }
+
+        // Warning if the tree depth < N
+        if (maxLayerReached < N) {
+            cout << "\nLayer Limit was Reached, can’t go further" << endl;
+        }
+
+        cout << endl;
+    }
+    
+    
 };
 class DatabaseGame
 {
@@ -350,7 +473,7 @@ class DatabaseGame
         if (!root || root->gameID == id) 
         return root;
         
-        if (id < root->gameID) 
+        if (stringToInt(id) < stringToInt(root->gameID)) 
         return searchGame(root->left, id);
         
         return searchGame(root->right, id);
@@ -363,9 +486,9 @@ class DatabaseGame
         if (!root) 
         return new Game(id, name, developer, publisher, size, copiesSold);
         
-        if (id < root->gameID) 
+        if (stringToInt(id) < stringToInt(root->gameID)) 
         root->left = insertGameHelper(root->left, id, name, developer, publisher, size, copiesSold);
-        else if (id > root->gameID) 
+        else if (stringToInt(id) > stringToInt(root->gameID)) 
         root->right = insertGameHelper(root->right, id, name, developer, publisher, size, copiesSold);
         
         return root;
@@ -387,11 +510,11 @@ class DatabaseGame
         if (!root) 
         return nullptr;
 
-        if (id < root->gameID) 
+        if (stringToInt(id) < stringToInt(root->gameID)) 
         {
             root->left = deleteGameHelper(root->left, id);
         } 
-        else if (id > root->gameID) 
+        else if (stringToInt(id) > stringToInt(root->gameID)) 
         {
             root->right = deleteGameHelper(root->right, id);
         } 
@@ -434,7 +557,7 @@ class DatabaseGame
           if (root->gameID == id) 
           return layer;
 
-          root = (id < root->gameID) ? root->left : root->right;
+          root = (stringToInt(id) < stringToInt(root->gameID)) ? root->left : root->right;
           layer++;
        }
        cout << "Game with ID " << id << " does not exist.\n";
@@ -463,6 +586,41 @@ class DatabaseGame
       }
       return false;
     }
+    
+    int stringToInt(string& str) {
+    int result = 0;
+    bool isNegative = false;
+    int startIndex = 0;
+
+    // Check if the string has a negative sign
+    if (str[0] == '-') {
+        isNegative = true;
+        startIndex = 1; // Start from the next character
+    }
+
+    for (int i = startIndex; i < str.length(); ++i) {
+        char ch = str[i];
+        
+        // Ensure the character is a digit
+        if (ch < '0' || ch > '9') {
+            std::cerr << "Invalid character in input string.\n";
+            return 0;
+        }
+        
+        // Update result by shifting the existing digits left and adding the new digit
+        result = result * 10 + (ch - '0');
+    }
+
+    // Apply negative sign if necessary
+    if (isNegative) {
+        result = -result;
+    }
+
+    return result;
+}
+    
+    
+    
     public: 
      
     void insertGame(string id, string name, string developer, string publisher, float size, int copiesSold) 
