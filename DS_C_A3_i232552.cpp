@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 using namespace std;
 //structure for gamesplayed node
 struct GamesPlayed 
@@ -578,6 +579,52 @@ class DatabasePlayer
     }
     
     
+    
+    
+    //store in csv
+    
+    
+     void saveDataToCSV(Player* root, ofstream& file) {
+        if (root == nullptr) 
+        return;
+
+        // Write player details (Player ID, Name, Phone, Email, Password)
+        file << root->playerID << "," 
+             << root->playerName << "," 
+             << root->phoneNumber << "," 
+             << root->email << "," 
+             << root->password;
+
+        // Write game details (Game ID, Hours Played, Achievements)
+        GamesPlayed* game = root->gamesHead;
+        while (game != nullptr) {
+            file << "," << game->gameID
+                 << "," << game->hoursPlayed
+                 << "," << game->achievementsUnlocked;
+            game = game->next;
+        }
+        file << endl;
+
+        // Recur for left and right children
+        saveDataToCSV(root->left, file);
+        saveDataToCSV(root->right, file);
+    }
+
+    // Function to save the entire database to a CSV file
+    void saveDatabaseToCSV() {
+        ofstream file("Playerrr.txt");
+        if (!file.is_open()) {
+            cout << "Error opening file." << endl;
+            return;
+        }
+
+        // Save player data to the CSV file
+        saveDataToCSV(playerRoot, file);
+
+        file.close();
+    }
+    
+    
 };
 class DatabaseGame
 {
@@ -853,6 +900,42 @@ class DatabaseGame
         cout << endl;
     }
     
+    
+     //store in csv
+    
+    
+     void saveDataToCSV(Game* root, ofstream& file) {
+        if (root == nullptr) 
+        return;
+
+        file << root->gameID << "," 
+             << root->gameName << "," 
+             << root->developer << "," 
+             << root->publisher<< "," 
+             << root->fileSize<< ","
+             << root -> copiesSold;
+
+        file << endl;
+
+        // Recur for left and right children
+        saveDataToCSV(root->left, file);
+        saveDataToCSV(root->right, file);
+    }
+
+    // Function to save the entire database to a CSV file
+    void saveDatabaseToCSV() {
+        ofstream file("Gamessss.txt");
+        if (!file.is_open()) {
+            cout << "Error opening file." << endl;
+            return;
+        }
+
+        // Save player data to the CSV file
+        saveDataToCSV(gameRoot, file);
+
+        file.close();
+    }
+    
 };
 int main()
 {
@@ -863,7 +946,7 @@ int main()
     db.insertPlayer("P002", "Bob", "0987654321", "bob@example.com", "password456");
     db.insertPlayer("P003", "Charlie", "5555555555", "charlie@example.com", "password789");
 
-
+    db.saveDatabaseToCSV();
    
     // Show details of a player
     //cout << "\nShowing details of player P001:" << endl;
