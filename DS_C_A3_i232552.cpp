@@ -1,7 +1,9 @@
+//Muhammad Moiz Khalid 
+//23i-2552
+//Assignment 3
 #include <iostream>
 #include <fstream>
 #include <sstream>
-
 using namespace std;
 //structure for gamesplayed node
 struct GamesPlayed 
@@ -190,24 +192,6 @@ class DatabasePlayer
         if (!root)
         { 
           Player* player = new Player(id, name, phone, email, password);
-          //string inp;
-          //cout<<"Enter yes to add games played details"<<endl;
-          //cin>> inp;
-          //while(inp == "yes")
-          //{
-            //string ID;
-            //float time;
-            //int ach;
-            //cout<<"Enter GameID"<<endl;
-            //cin>>ID;
-            //cout<<"Enter Hours Played"<<endl;
-            //cin>>time;
-            //cout<<"Enter Achievements"<<endl;
-            //cin>>ach;
-            //player -> addGame(ID,time,ach);
-            //cout<<"Add more?"<<endl;
-            //cin>> inp;
-          //}
           return player;
         }
         if (stringToInt(id) < stringToInt(root->playerID)) 
@@ -297,7 +281,7 @@ class DatabasePlayer
       if (root->playerID == id) 
       return true;
 
-      if (id < root->playerID) 
+      if (stringToInt(id) < stringToInt(root->playerID)) 
       {
          if (showPathHelper(root->left, id)) 
          return true;
@@ -457,17 +441,18 @@ class DatabasePlayer
     }
     
  
-     void searchPlayer(string id) 
+     Player* searchPlayer(string id) 
      {
-        if (searchPlayer(playerRoot, id) == nullptr) 
+        Player* player = searchPlayer(playerRoot, id);
+        if (player == nullptr) 
         {
             cout << "Error: Game with ID " << id << " does not exists.\n";
-            return;
+            return player;
         }
         
-        Player* player = searchPlayer(playerRoot, id);
+        
         cout<<"Found \n";    
-        return;
+        return player;
      }
      
    
@@ -519,13 +504,13 @@ class DatabasePlayer
             playerRoot = insertPlayerHelper(playerRoot, newID, newName, newEmail, newPhone, newPassword);
             Player* newNode = searchPlayer(playerRoot, newID);
             newNode->gamesHead = nodeToEdit->gamesHead;
-            delete nodeToEdit;
         } 
         else 
-        {
+        {   
             nodeToEdit->playerName = newName;
             nodeToEdit->email = newEmail;
             nodeToEdit->phoneNumber = newPhone;
+            nodeToEdit->password = newPassword;
         }
 
         cout << "Player entry updated successfully." << endl;
@@ -535,51 +520,51 @@ class DatabasePlayer
     //testttttttttttttttttttttttttttttttttttttttttttttttt
     
     void showNLayersHelper(int N) {
-        if (!playerRoot) {
-            cout << "Tree is empty." << endl;
-            return;
-        }
-
-        // Linked list-based queue
-        Queue queue;
-        queue.enqueue(playerRoot, 1);  // Start with the root node at depth 1
-        int currentLayer = 1;
-        int maxLayerReached = 0;
-
-        while (!queue.isEmpty()) {
-            QueueNode* nodeData = queue.dequeue();
-            Player* current = nodeData->treeNode;
-            int depth = nodeData->depth;
-            delete nodeData; // Free memory
-
-            // Check if we are within the layer limit
-            if (depth > N) {
-                cout << "\nLayer Limit was Reached, can’t go further" << endl;
-                break;
-            }
-
-            // Print player info layer by layer
-            if (depth > currentLayer) {
-                cout << "\nLayer " << depth << ": ";
-                currentLayer = depth;
-            }
-
-            cout << "[" << current->playerID << ": " << current->playerName << "] ";
-
-            // Add left and right children to the queue
-            if (current->left) queue.enqueue(current->left, depth + 1);
-            if (current->right) queue.enqueue(current->right, depth + 1);
-
-            maxLayerReached = depth;
-        }
-
-        // Warning if the tree depth < N
-        if (maxLayerReached < N) {
-            cout << "\nLayer Limit was Reached, can’t go further" << endl;
-        }
-
-        cout << endl;
+    if (!playerRoot) {
+        cout << "Tree is empty." << endl;
+        return;
     }
+
+    // Linked list-based queue
+    Queue queue;
+    queue.enqueue(playerRoot, 1);  // Start with the root node at depth 1
+    int currentLayer = 0;
+    int maxLayerReached = 0;
+
+    while (!queue.isEmpty()) {
+        QueueNode* nodeData = queue.dequeue();
+        Player* current = nodeData->treeNode;
+        int depth = nodeData->depth;
+        delete nodeData; // Free memory
+
+        // Stop processing if we exceed the layer limit
+        if (depth > N) {
+            break;
+        }
+
+        // Print player info layer by layer
+        if (depth > currentLayer) {
+            cout << "\nLayer " << depth << ": ";
+            currentLayer = depth;
+        }
+
+        cout << "[" << current->playerID << ": " << current->playerName << "] ";
+
+        // Add left and right children to the queue
+        if (current->left) queue.enqueue(current->left, depth + 1);
+        if (current->right) queue.enqueue(current->right, depth + 1);
+
+        maxLayerReached = depth;  // Track the deepest layer reached
+    }
+
+    // Additional message if the maximum depth of the tree is less than N
+    if (maxLayerReached < N) {
+            cout << "\nLayer Limit was Reached, can’t go further" << endl;
+    }
+
+    cout << endl;
+}
+
     
     
     void topNPlayers(int N) {
@@ -834,7 +819,7 @@ class DatabaseGame
       if (root->gameID == id) 
       return true;
 
-      if (id < root->gameID) 
+      if (stringToInt(id) < stringToInt(root->gameID)) 
       {
          if (showPathHelper(root->left, id)) 
          return true;
@@ -924,17 +909,17 @@ class DatabaseGame
         cout << "Inserted game with ID: " << id << endl;
     }
     
-     void searchGame(string id) 
+     Game* searchGame(string id) 
      { 
-        if (searchGame(gameRoot, id) == nullptr) 
+        Game* game = searchGame(gameRoot, id);
+        if (game == nullptr) 
         {
             cout << "Error: Game with ID " << id << " does not exists.\n";
-            return;
+            return game;
         }
         
-        Game* game = searchGame(gameRoot, id);
         cout<<"Found \n";    
-        return;
+        return game;
      }
 
     void deleteGame(string id) 
@@ -969,18 +954,17 @@ class DatabaseGame
         // Linked list-based queue
         Queue queue;
         queue.enqueue(gameRoot, 1);  // Start with the root node at depth 1
-        int currentLayer = 1;
+        int currentLayer = 0;
         int maxLayerReached = 0;
 
         while (!queue.isEmpty()) {
             QueueNode* nodeData = queue.dequeue();
-            Player* current = nodeData->treeNode;
+            Game* current = nodeData->treeNode2;
             int depth = nodeData->depth;
             delete nodeData; // Free memory
 
             // Check if we are within the layer limit
             if (depth > N) {
-                cout << "\nLayer Limit was Reached, can’t go further" << endl;
                 break;
             }
 
@@ -990,7 +974,7 @@ class DatabaseGame
                 currentLayer = depth;
             }
 
-            cout << "[" << current->playerID << ": " << current->playerName << "] ";
+            cout << "[" << current->gameID << ": " << current->gameName << "] ";
 
             // Add left and right children to the queue
             if (current->left) queue.enqueue(current->left, depth + 1);
@@ -1006,6 +990,35 @@ class DatabaseGame
 
         cout << endl;
     }
+    
+     void editEntry(string oldID, string newID, string newName, string newdev, string newPub, float newSize, int newDownload ) 
+     {
+        Game* nodeToEdit = searchGame(gameRoot, oldID);
+
+        if (!nodeToEdit) 
+        {
+            cout << "Game with ID " << oldID << " not found." << endl;
+            return;
+        }
+
+        if (oldID != newID) 
+        {
+            gameRoot = deleteGameHelper(gameRoot, oldID);
+            gameRoot = insertGameHelper(gameRoot, newID, newName, newdev, newPub, newSize, newDownload );
+        } 
+        else 
+        {
+            nodeToEdit->gameName = newName;
+            nodeToEdit-> developer = newdev;
+            nodeToEdit-> publisher= newPub;
+            nodeToEdit-> fileSize= newSize;
+            nodeToEdit-> copiesSold= newDownload;
+        }
+
+        cout << "Game entry updated successfully." << endl;
+    }
+    
+    
     
     
      //store in csv
@@ -1091,14 +1104,43 @@ int main()
     //db.insertPlayer("P001", "Alice", "1234567890", "alice@example.com", "password123");
     //db.insertPlayer("P002", "Bob", "0987654321", "bob@example.com", "password456");
     //db.insertPlayer("P003", "Charlie", "5555555555", "charlie@example.com", "password789");
+    
+    //db.insertPlayer("233", "bruh", "4445423", "kokokok", "ititit");
+    //string inp;
+          //cout<<"Enter yes to add games played details"<<endl;
+          //cin>> inp;
+          //while(inp == "yes")
+          //{
+            //string ID;
+            //float time;
+            //int ach;
+            //cout<<"Enter GameID"<<endl;
+            //cin>>ID;
+            //cout<<"Enter Hours Played"<<endl;
+            //cin>>time;
+            //cout<<"Enter Achievements"<<endl;
+            //cin>>ach;
+            //player -> addGame(ID,time,ach);
+            //cout<<"Add more?"<<endl;
+            //cin>> inp;
+          //}
+    
+    
+    
     db.loadPlayersFromCSV();
+        //db.editEntry("6525943662", "121212", "moiz", "mk@@", "033634344", "lmao");
+        db.showDetails("6525943662");
     db.saveDatabaseToCSV();
    
-    db2.loadGamesFromCSV();
-    db2.saveDatabaseToCSV();
+
+    //db2.loadGamesFromCSV();
+    //db2.saveDatabaseToCSV();
     // Show details of a player
     //cout << "\nShowing details of player P001:" << endl;
     //db.showDetails("P001");
-
+    
+    //db.showNLayersHelper(6);
+    //cout<<db.showLayerNumber("6525943662")<<endl;
+    //db.showPath("6525943662");
     return 0;
 }
