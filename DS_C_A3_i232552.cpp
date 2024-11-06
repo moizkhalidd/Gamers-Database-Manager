@@ -12,7 +12,8 @@ struct GamesPlayed
     float hoursPlayed;
     int achievementsUnlocked;
     GamesPlayed *next = nullptr;
-
+   
+    //constructor
     GamesPlayed(string id, float hours, int achievements)
     {
        gameID = id;
@@ -32,6 +33,7 @@ struct Game
     int copiesSold;
     Game *left = nullptr, *right = nullptr;
 
+    //constructor
     Game(string id, string name, string dev, string pub, float size, int sold) 
     {
        gameID = id; 
@@ -53,6 +55,7 @@ struct Player
     Player *left = nullptr, *right= nullptr;
     GamesPlayed *gamesHead = nullptr;
 
+    //constructor
     Player(string id, string name, string phone, string mail, string pass)
     {
        playerID = id; 
@@ -71,20 +74,22 @@ struct Player
          cout<<"ID already exists"<<endl;
          return;
         }
+        
         GamesPlayed *newGame = new GamesPlayed(gameID, hours, achievements);
         if(gamesHead == nullptr)
         gamesHead = newGame;
         else
         {
-         GamesPlayed *temp = gamesHead;
-         while(temp -> next!= nullptr)
-         {
-           temp = temp -> next;
-         }       
-          temp -> next = newGame;
+             GamesPlayed *temp = gamesHead;
+             while(temp -> next!= nullptr)
+             {
+               temp = temp -> next;
+             }       
+              temp -> next = newGame;
         }
     }
     
+    //function to check if the game ID already exists
     GamesPlayed* searchGame(string id) 
     {
         if (!gamesHead) 
@@ -103,27 +108,60 @@ struct Player
     }
     
 };
-struct QueueNode {
+//structure for node of queue to print N-layers
+struct QueueNode 
+{
     Player* treeNode;
     Game* treeNode2;
     int depth;
-    QueueNode* next;
-
-    QueueNode(Player* node, int dep) : treeNode(node), depth(dep), next(nullptr) {}
-    QueueNode(Game* node, int dep) : treeNode2(node), depth(dep), next(nullptr) {}
+    QueueNode* next = nullptr;
+    
+    //constructor for the player BST
+    QueueNode(Player* node, int dep)  
+    {  
+      treeNode = node; 
+      depth = dep;
+    }
+    
+    //constructor for game BST
+    QueueNode(Game* node, int dep) 
+    {  
+      treeNode2 = node;
+      depth = dep;
+    }
 };
-class Queue {
-    QueueNode* front;
-    QueueNode* rear;
+//class for Queue to print N-Layers
+class Queue 
+{
+    QueueNode* front = nullptr;
+    QueueNode* rear = nullptr;
 
 public:
-    Queue() : front(nullptr), rear(nullptr) {}
-
-    bool isEmpty() {
+    
+    //function to check if queue is empty
+    bool isEmpty() 
+    {
         return front == nullptr;
     }
-
-    void enqueue(Player* node, int depth) {
+    
+    //function to add to queue for player BST
+    void enqueue(Player* node, int depth) 
+    {
+        QueueNode* newNode = new QueueNode(node, depth);
+        if (rear) 
+        {
+            rear->next = newNode;
+        }
+        
+        rear = newNode;
+        if (!front) 
+        {
+            front = newNode;
+        }
+    }
+    //function to add to queue for game BST    
+    void enqueue(Game* node, int depth) 
+    {
         QueueNode* newNode = new QueueNode(node, depth);
         if (rear) {
             rear->next = newNode;
@@ -134,22 +172,16 @@ public:
         }
     }
     
-    void enqueue(Game* node, int depth) {
-        QueueNode* newNode = new QueueNode(node, depth);
-        if (rear) {
-            rear->next = newNode;
-        }
-        rear = newNode;
-        if (!front) {
-            front = newNode;
-        }
-    }
-
-    QueueNode* dequeue() {
-        if (isEmpty()) return nullptr;
+    //function to dequeue
+    QueueNode* dequeue() 
+    {
+        if (isEmpty())
+        return nullptr;
+        
         QueueNode* temp = front;
         front = front->next;
-        if (!front) {
+        if (!front) 
+        {
             rear = nullptr;
         }
         return temp;
@@ -158,12 +190,12 @@ public:
 //BST for player 
 class DatabasePlayer  
 {
-  private:
+    private:
     Player *playerRoot = nullptr;
     int skipThreshold;
     
     public:
-    //generating custom seed
+    //constructor that generates custom seed
     DatabasePlayer() 
     {
       // Calculate the skip threshold based on roll number
@@ -194,6 +226,7 @@ class DatabasePlayer
           Player* player = new Player(id, name, phone, email, password);
           return player;
         }
+        
         if (stringToInt(id) < stringToInt(root->playerID)) 
         root->left = insertPlayerHelper(root->left, id, name, phone, email, password);
         else if (stringToInt(id) > stringToInt(root->playerID)) 
@@ -319,102 +352,120 @@ class DatabasePlayer
       }
     }
     
-    int stringToInt(string& str) {
+    
+    //function to change string to integer
+    int stringToInt(string& str) 
+    {
   
     int result = 0;
     bool isNegative = false;
     int startIndex = 0;
 
     // Check if the string has a negative sign
-    if (str[0] == '-') {
+    if (str[0] == '-') 
+    {
         isNegative = true;
-        startIndex = 1; // Start from the next character
+        // Start from the next character
+        startIndex = 1; 
     }
 
-    for (int i = startIndex; i < str.length(); ++i) {
+    for (int i = startIndex; i < str.length(); ++i) 
+    {
         char ch = str[i];
-        
-        // Ensure the character is a digit
-        //if (ch < '0' || ch > '9') {
-          //  cout << "Invalid character in input string.\n";
-            //return 0;
-        //}
-        
+
         // Update result by shifting the existing digits left and adding the new digit
         if (ch >= '0' && ch <= '9')
         result = result * 10 + (ch - '0');
     }
 
     // Apply negative sign if necessary
-    if (isNegative) {
+    if (isNegative) 
+    {
         result = -result;
     }
     
     return result;
    }
     
-    
-    float stringToFloat(string &str) {
-    float result = 0.0f;
-    float decimalPlace = 0.1f;
-    bool isNegative = false;
-    bool isFractionalPart = false;
-    
-    for (char ch : str) {
-        if (ch == '-') {
-            isNegative = true;
-        }
-        else if (ch == '.') {
-            isFractionalPart = true;
-        }
-        else if (ch >= '0' && ch <= '9') {
-            if (isFractionalPart) {
-                result += (ch - '0') * decimalPlace;
-                decimalPlace *= 0.1f;  // Move one place to the right in the decimal
+    //function to convert string to float
+    float stringToFloat(string &str) 
+    {
+        float result = 0.0f;
+        float decimalPlace = 0.1f;
+        bool isNegative = false;
+        bool isFractionalPart = false;
+        
+        for (char ch : str) 
+        {
+            if (ch == '-') 
+            {
+                isNegative = true;
             }
-            else {
-                result = result * 10 + (ch - '0');  // Build the integer part
+            else if (ch == '.') 
+            {
+                isFractionalPart = true;
+            }
+            else if (ch >= '0' && ch <= '9') 
+            {
+                if (isFractionalPart) 
+                {
+                    result += (ch - '0') * decimalPlace;
+                    // Move one place to the right in the decimal
+                    decimalPlace *= 0.1f;  
+                }
+                else 
+                {
+                    // Build the integer part
+                    result = result * 10 + (ch - '0');  
+                }
             }
         }
+
+        if (isNegative) 
+        {
+            result = -result;
+        }
+        
+        return result;
     }
 
-    if (isNegative) {
-        result = -result;
-    }
-    
-    return result;
-}
-    
-    
-    
-    // top n playerssssssssssssssss
-    struct PlayerGamesCount {
+    //structure to print top N players with most games played
+    struct PlayerGamesCount 
+    {
         Player* player;
         int gamesCount;
     };
-
-    void countGamesForPlayer(Player* player, PlayerGamesCount* playerCounts, int& index) {
+    
+    //function to count the number of games played by a player
+    void countGamesForPlayer(Player* player, PlayerGamesCount* playerCounts, int& index) 
+    {
         int gameCount = 0;
         GamesPlayed* game = player->gamesHead;
-        while (game) {
+        while (game) 
+        {
             gameCount++;
             game = game->next;
         }
         playerCounts[index++] = {player, gameCount};
     }
 
-    void inorderCollectPlayers(Player* root, PlayerGamesCount* playerCounts, int& index) {
+    void inorderCollectPlayers(Player* root, PlayerGamesCount* playerCounts, int& index) 
+    {
         if (!root) return;
         inorderCollectPlayers(root->left, playerCounts, index);
         countGamesForPlayer(root, playerCounts, index);
         inorderCollectPlayers(root->right, playerCounts, index);
     }
 
-    void sortPlayersByGames(PlayerGamesCount* playerCounts, int size) {
-        // Bubble sort algorithm without std::swap
-        for (int i = 0; i < size - 1; ++i) {
-            for (int j = i + 1; j < size; ++j) {
-                if (playerCounts[i].gamesCount < playerCounts[j].gamesCount) {
+    void sortPlayersByGames(PlayerGamesCount* playerCounts, int size) 
+    {
+        // Bubble sort algorithm 
+        for (int i = 0; i < size - 1; ++i) 
+        {
+            for (int j = i + 1; j < size; ++j)
+            {
+                if (playerCounts[i].gamesCount < playerCounts[j].gamesCount) 
+                {
                     // Swap manually
                     PlayerGamesCount temp = playerCounts[i];
                     playerCounts[i] = playerCounts[j];
@@ -516,34 +567,38 @@ class DatabasePlayer
         cout << "Player entry updated successfully." << endl;
     }
     
-    
-    //testttttttttttttttttttttttttttttttttttttttttttttttt
-    
-    void showNLayersHelper(int N) {
-    if (!playerRoot) {
+    //function to show N-Layers
+    void showNLayersHelper(int N) 
+    {
+      if (!playerRoot) 
+      {
         cout << "Tree is empty." << endl;
         return;
     }
 
     // Linked list-based queue
     Queue queue;
-    queue.enqueue(playerRoot, 1);  // Start with the root node at depth 1
+    // Start with the root node at depth 1
+    queue.enqueue(playerRoot, 1);  
     int currentLayer = 0;
     int maxLayerReached = 0;
 
-    while (!queue.isEmpty()) {
+    while (!queue.isEmpty()) 
+    {
         QueueNode* nodeData = queue.dequeue();
         Player* current = nodeData->treeNode;
         int depth = nodeData->depth;
-        delete nodeData; // Free memory
+        delete nodeData;
 
         // Stop processing if we exceed the layer limit
-        if (depth > N) {
+        if (depth > N) 
+        {
             break;
         }
 
         // Print player info layer by layer
-        if (depth > currentLayer) {
+        if (depth > currentLayer) 
+        {
             cout << "\nLayer " << depth << ": ";
             currentLayer = depth;
         }
@@ -558,7 +613,8 @@ class DatabasePlayer
     }
 
     // Additional message if the maximum depth of the tree is less than N
-    if (maxLayerReached < N) {
+    if (maxLayerReached < N) 
+    {
             cout << "\nLayer Limit was Reached, can’t go further" << endl;
     }
 
@@ -567,7 +623,8 @@ class DatabasePlayer
 
     
     
-    void topNPlayers(int N) {
+    void topNPlayers(int N) 
+    {
         int totalPlayers = countNodes(playerRoot);
         PlayerGamesCount* playerCounts = new PlayerGamesCount[totalPlayers];
         int index = 0;
@@ -579,38 +636,38 @@ class DatabasePlayer
         sortPlayersByGames(playerCounts, totalPlayers);
 
         // Display the top N players
-        for (int i = 0; i < N && i < totalPlayers; ++i) {
-            std::cout << "Player ID: " << playerCounts[i].player->playerID
-                      << ", Name: " << playerCounts[i].player->playerName
-                      << ", Games Played: " << playerCounts[i].gamesCount << std::endl;
+        for (int i = 0; i < N && i < totalPlayers; ++i) 
+        {
+            cout << "Player ID: " << playerCounts[i].player->playerID
+                 << ", Name: " << playerCounts[i].player->playerName
+                 << ", Games Played: " << playerCounts[i].gamesCount << std::endl;
         }
 
         delete[] playerCounts;
     }
 
-    int countNodes(Player* root) {
-        if (!root) return 0;
+    int countNodes(Player* root) 
+    {
+        if (!root) 
+        return 0;
         return 1 + countNodes(root->left) + countNodes(root->right);
     }
     
     
-    
-    
-    //store in csv
-    
-    
-     void saveDataToCSV(Player* root, ofstream& file) {
+     //function to store data in a csv file   
+     void saveDataToCSV(Player* root, ofstream& file) 
+     {
         if (root == nullptr) 
         return;
 
-        // Write player details (Player ID, Name, Phone, Email, Password)
+        // Writing player details (Player ID, Name, Phone, Email, Password)
         file << root->playerID << "," 
              << root->playerName << "," 
              << root->phoneNumber << "," 
              << root->email << "," 
              << root->password;
 
-        // Write game details (Game ID, Hours Played, Achievements)
+        // Writing game details (Game ID, Hours Played, Achievements)
         GamesPlayed* game = root->gamesHead;
         while (game != nullptr) {
             file << "," << game->gameID
@@ -626,9 +683,11 @@ class DatabasePlayer
     }
 
     // Function to save the entire database to a CSV file
-    void saveDatabaseToCSV() {
-        ofstream file("Playerrr.txt");
-        if (!file.is_open()) {
+    void saveDatabaseToCSV() 
+    {
+        ofstream file("newPlayers.txt");
+        if (!file.is_open()) 
+        {
             cout << "Error opening file." << endl;
             return;
         }
@@ -639,25 +698,24 @@ class DatabasePlayer
         file.close();
     }
     
-    
-    // load from csv
-    
-    
-    
+    //function to load data from the csv file
     void loadPlayersFromCSV() 
     {
         ifstream file("Players.txt");
-        if (!file.is_open()) {
+        if (!file.is_open()) 
+        {
             cout << "Error opening file." << endl;
             return;
         }
 
         string line;
-        while (getline(file, line)) {
+        while (getline(file, line)) 
+        {
             // Generate random number from 0 to 1000 to decide if we should skip this line
             int randomNum = rand() % 1001;
             
-            if (randomNum < skipThreshold) {
+            if (randomNum < skipThreshold) 
+            {
                 // Skip this line (do not insert player)
                 continue;
             }
@@ -676,31 +734,30 @@ class DatabasePlayer
             
             Player* player = searchPlayer(playerRoot, id);
             
-            while (getline(ss, gameid, ',') && getline(ss, hours, ',') && getline(ss, achiev, ',')) {
-            // Convert hours and achievements from strings to int or float as needed
+            while (getline(ss, gameid, ',') && getline(ss, hours, ',') && getline(ss, achiev, ',')) 
+            {
+            // Converting hours and achievements from strings to float and int
             float hoursPlayed = stringToFloat(hours);
             int achievementsUnlocked = stringToInt(achiev);
 
             // Add game details to the player's game list
             player->addGame(gameid, hoursPlayed, achievementsUnlocked);
            }
-            
-        
         }
         
         file.close();
     }
     
 };
+//BST for player 
 class DatabaseGame
 {
-   private:
-
+    private:
     Game *gameRoot = nullptr;
     int skipThreshold;
     
     public: 
-    //generating custom seed
+    //constructor to generate custom seed
     DatabaseGame() 
     {
       // Calculate the skip threshold based on roll number
@@ -832,68 +889,80 @@ class DatabaseGame
       return false;
     }
     
-    int stringToInt(string& str) {
+    //function to convert string to int
+    int stringToInt(string& str) 
+    {
     int result = 0;
     bool isNegative = false;
     int startIndex = 0;
 
     // Check if the string has a negative sign
-    if (str[0] == '-') {
+    if (str[0] == '-') 
+    {
         isNegative = true;
-        startIndex = 1; // Start from the next character
+        // Start from the next character
+        startIndex = 1; 
     }
 
-    for (int i = startIndex; i < str.length(); ++i) {
+    for (int i = startIndex; i < str.length(); ++i) 
+    {
         char ch = str[i];
-        
-        // Ensure the character is a digit
-        if (ch < '0' || ch > '9') {
-            std::cerr << "Invalid character in input string.\n";
-            return 0;
-        }
-        
+            
         // Update result by shifting the existing digits left and adding the new digit
+        if (ch >= '0' && ch <= '9')
         result = result * 10 + (ch - '0');
     }
 
     // Apply negative sign if necessary
-    if (isNegative) {
+    if (isNegative) 
+    {
         result = -result;
     }
 
     return result;
-}
+   }
     
-    float stringToFloat(string &str) {
-    float result = 0.0f;
-    float decimalPlace = 0.1f;
-    bool isNegative = false;
-    bool isFractionalPart = false;
-    
-    for (char ch : str) {
-        if (ch == '-') {
-            isNegative = true;
-        }
-        else if (ch == '.') {
-            isFractionalPart = true;
-        }
-        else if (ch >= '0' && ch <= '9') {
-            if (isFractionalPart) {
-                result += (ch - '0') * decimalPlace;
-                decimalPlace *= 0.1f;  // Move one place to the right in the decimal
+    //function to convert string to float
+    float stringToFloat(string &str) 
+    {
+        float result = 0.0f;
+        float decimalPlace = 0.1f;
+        bool isNegative = false;
+        bool isFractionalPart = false;
+        
+        for (char ch : str) 
+        {
+            if (ch == '-') 
+            {
+                isNegative = true;
             }
-            else {
-                result = result * 10 + (ch - '0');  // Build the integer part
+            else if (ch == '.') 
+            {
+                isFractionalPart = true;
+            }
+            else if (ch >= '0' && ch <= '9')
+            {
+                if (isFractionalPart) 
+                {
+                    result += (ch - '0') * decimalPlace;
+                    // Move one place to the right in the decimal
+                    decimalPlace *= 0.1f;  
+                }
+                else 
+                {
+                    // Build the integer part
+                    result = result * 10 + (ch - '0');  
+                }
             }
         }
-    }
 
-    if (isNegative) {
-        result = -result;
+        if (isNegative) 
+        {
+            result = -result;
+        }
+        
+        return result;
     }
-    
-    return result;
-}
     
     public: 
      
@@ -945,31 +1014,37 @@ class DatabaseGame
      }
      
      
-     void showNLayersHelper(int N) {
-        if (!gameRoot) {
+     void showNLayersHelper(int N) 
+     {
+        if (!gameRoot)
+        {
             cout << "Tree is empty." << endl;
             return;
         }
 
         // Linked list-based queue
         Queue queue;
-        queue.enqueue(gameRoot, 1);  // Start with the root node at depth 1
+        // Start with the root node at depth 1
+        queue.enqueue(gameRoot, 1);  
         int currentLayer = 0;
         int maxLayerReached = 0;
 
-        while (!queue.isEmpty()) {
+        while (!queue.isEmpty()) 
+        {
             QueueNode* nodeData = queue.dequeue();
             Game* current = nodeData->treeNode2;
             int depth = nodeData->depth;
-            delete nodeData; // Free memory
+            delete nodeData; 
 
             // Check if we are within the layer limit
-            if (depth > N) {
+            if (depth > N) 
+            {
                 break;
             }
 
             // Print player info layer by layer
-            if (depth > currentLayer) {
+            if (depth > currentLayer) 
+            {
                 cout << "\nLayer " << depth << ": ";
                 currentLayer = depth;
             }
@@ -984,7 +1059,8 @@ class DatabaseGame
         }
 
         // Warning if the tree depth < N
-        if (maxLayerReached < N) {
+        if (maxLayerReached < N) 
+        {
             cout << "\nLayer Limit was Reached, can’t go further" << endl;
         }
 
@@ -1018,13 +1094,9 @@ class DatabaseGame
         cout << "Game entry updated successfully." << endl;
     }
     
-    
-    
-    
-     //store in csv
-    
-    
-     void saveDataToCSV(Game* root, ofstream& file) {
+     //function to store data in a csv file
+     void saveDataToCSV(Game* root, ofstream& file) 
+     {
         if (root == nullptr) 
         return;
 
@@ -1043,9 +1115,11 @@ class DatabaseGame
     }
 
     // Function to save the entire database to a CSV file
-    void saveDatabaseToCSV() {
-        ofstream file("Gamessss.txt");
-        if (!file.is_open()) {
+    void saveDatabaseToCSV() 
+    {
+        ofstream file("newGames.txt");
+        if (!file.is_open()) 
+        {
             cout << "Error opening file." << endl;
             return;
         }
@@ -1056,21 +1130,24 @@ class DatabaseGame
         file.close();
     }
     
-    
+    //function to load data from a csv file
     void loadGamesFromCSV() 
     {
         ifstream file("Games.txt");
-        if (!file.is_open()) {
+        if (!file.is_open()) 
+        {
             cout << "Error opening file." << endl;
             return;
         }
 
         string line;
-        while (getline(file, line)) {
+        while (getline(file, line)) 
+        {
             // Generate random number from 0 to 1000 to decide if we should skip this line
             int randomNum = rand() % 1001;
             
-            if (randomNum < skipThreshold) {
+            if (randomNum < skipThreshold) 
+            {
                 // Skip this line (do not insert game)
                 continue;
             }
@@ -1086,61 +1163,12 @@ class DatabaseGame
             getline(ss, download, ',');
 
             // Insert game into the BST
-            insertGame(id, name, develop, publish, stringToFloat(size), stringToInt(download));
-            
-        }
-        
+            insertGame(id, name, develop, publish, stringToFloat(size), stringToInt(download));      
+        }  
         file.close();
-    }
-    
-    
-    
+    } 
 };
 int main()
 {
-   DatabasePlayer db;
-   DatabaseGame db2;
-    // Insert some players
-    //db.insertPlayer("P001", "Alice", "1234567890", "alice@example.com", "password123");
-    //db.insertPlayer("P002", "Bob", "0987654321", "bob@example.com", "password456");
-    //db.insertPlayer("P003", "Charlie", "5555555555", "charlie@example.com", "password789");
-    
-    //db.insertPlayer("233", "bruh", "4445423", "kokokok", "ititit");
-    //string inp;
-          //cout<<"Enter yes to add games played details"<<endl;
-          //cin>> inp;
-          //while(inp == "yes")
-          //{
-            //string ID;
-            //float time;
-            //int ach;
-            //cout<<"Enter GameID"<<endl;
-            //cin>>ID;
-            //cout<<"Enter Hours Played"<<endl;
-            //cin>>time;
-            //cout<<"Enter Achievements"<<endl;
-            //cin>>ach;
-            //player -> addGame(ID,time,ach);
-            //cout<<"Add more?"<<endl;
-            //cin>> inp;
-          //}
-    
-    
-    
-    db.loadPlayersFromCSV();
-        //db.editEntry("6525943662", "121212", "moiz", "mk@@", "033634344", "lmao");
-        db.showDetails("6525943662");
-    db.saveDatabaseToCSV();
-   
-
-    //db2.loadGamesFromCSV();
-    //db2.saveDatabaseToCSV();
-    // Show details of a player
-    //cout << "\nShowing details of player P001:" << endl;
-    //db.showDetails("P001");
-    
-    //db.showNLayersHelper(6);
-    //cout<<db.showLayerNumber("6525943662")<<endl;
-    //db.showPath("6525943662");
     return 0;
 }
