@@ -367,7 +367,48 @@ class DatabasePlayer
     }
     
     return result;
-}
+   }
+    
+    
+    
+    
+    // top n playerssssssssssssssss
+    struct PlayerGamesCount {
+        Player* player;
+        int gamesCount;
+    };
+
+    void countGamesForPlayer(Player* player, PlayerGamesCount* playerCounts, int& index) {
+        int gameCount = 0;
+        GamesPlayed* game = player->gamesHead;
+        while (game) {
+            gameCount++;
+            game = game->next;
+        }
+        playerCounts[index++] = {player, gameCount};
+    }
+
+    void inorderCollectPlayers(Player* root, PlayerGamesCount* playerCounts, int& index) {
+        if (!root) return;
+        inorderCollectPlayers(root->left, playerCounts, index);
+        countGamesForPlayer(root, playerCounts, index);
+        inorderCollectPlayers(root->right, playerCounts, index);
+    }
+
+    void sortPlayersByGames(PlayerGamesCount* playerCounts, int size) {
+        // Bubble sort algorithm without std::swap
+        for (int i = 0; i < size - 1; ++i) {
+            for (int j = i + 1; j < size; ++j) {
+                if (playerCounts[i].gamesCount < playerCounts[j].gamesCount) {
+                    // Swap manually
+                    PlayerGamesCount temp = playerCounts[i];
+                    playerCounts[i] = playerCounts[j];
+                    playerCounts[j] = temp;
+                }
+            }
+        }
+    }
+    
     
     
     public: 
@@ -507,6 +548,33 @@ class DatabasePlayer
         }
 
         cout << endl;
+    }
+    
+    
+    void topNPlayers(int N) {
+        int totalPlayers = countNodes(playerRoot);
+        PlayerGamesCount* playerCounts = new PlayerGamesCount[totalPlayers];
+        int index = 0;
+
+        // Collect all players with their game counts
+        inorderCollectPlayers(playerRoot, playerCounts, index);
+
+        // Sort players by game count in descending order
+        sortPlayersByGames(playerCounts, totalPlayers);
+
+        // Display the top N players
+        for (int i = 0; i < N && i < totalPlayers; ++i) {
+            std::cout << "Player ID: " << playerCounts[i].player->playerID
+                      << ", Name: " << playerCounts[i].player->playerName
+                      << ", Games Played: " << playerCounts[i].gamesCount << std::endl;
+        }
+
+        delete[] playerCounts;
+    }
+
+    int countNodes(Player* root) {
+        if (!root) return 0;
+        return 1 + countNodes(root->left) + countNodes(root->right);
     }
     
     
@@ -793,15 +861,13 @@ int main()
     // Insert some players
     db.insertPlayer("P001", "Alice", "1234567890", "alice@example.com", "password123");
     db.insertPlayer("P002", "Bob", "0987654321", "bob@example.com", "password456");
-    //db.insertPlayer("P003", "Charlie", "5555555555", "charlie@example.com", "password789");
+    db.insertPlayer("P003", "Charlie", "5555555555", "charlie@example.com", "password789");
 
 
    
     // Show details of a player
-    cout << "\nShowing details of player P001:" << endl;
-    db.showDetails("P001");
-
-    
+    //cout << "\nShowing details of player P001:" << endl;
+    //db.showDetails("P001");
 
     return 0;
 }
