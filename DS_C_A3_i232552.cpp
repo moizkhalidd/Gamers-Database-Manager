@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
+
 using namespace std;
 //structure for gamesplayed node
 struct GamesPlayed 
@@ -156,23 +158,20 @@ class DatabasePlayer
 {
   private:
     Player *playerRoot = nullptr;
+    int skipThreshold;
     
+    public:
     //generating custom seed
-    int generateSeed(string &rollNumber) 
+    DatabasePlayer() 
     {
-      int seed = 0;
-      for (int i = 0; i < rollNumber.length(); ++i) 
-      {
-        char ch = rollNumber[i];
-        if (ch >= '0' && ch <= '9') 
-        {
-            seed = seed * 10 + (ch - '0');
-        }
-      }
-
-      return seed;
+      // Calculate the skip threshold based on roll number
+        int lastTwoDigits = 232552 % 100; 
+        skipThreshold = (lastTwoDigits * 10) + 100;
+        
+        // Seed random number generator with roll number
+        srand(232552);
     }  
-    
+    private:
     //function to search player in the tree
     Player* searchPlayer(Player* root, string id) 
     {
@@ -191,24 +190,24 @@ class DatabasePlayer
         if (!root)
         { 
           Player* player = new Player(id, name, phone, email, password);
-          string inp;
-          cout<<"Enter yes to add games played details"<<endl;
-          cin>> inp;
-          while(inp == "yes")
-          {
-            string ID;
-            float time;
-            int ach;
-            cout<<"Enter GameID"<<endl;
-            cin>>ID;
-            cout<<"Enter Hours Played"<<endl;
-            cin>>time;
-            cout<<"Enter Achievements"<<endl;
-            cin>>ach;
-            player -> addGame(ID,time,ach);
-            cout<<"Add more?"<<endl;
-            cin>> inp;
-          }
+          //string inp;
+          //cout<<"Enter yes to add games played details"<<endl;
+          //cin>> inp;
+          //while(inp == "yes")
+          //{
+            //string ID;
+            //float time;
+            //int ach;
+            //cout<<"Enter GameID"<<endl;
+            //cin>>ID;
+            //cout<<"Enter Hours Played"<<endl;
+            //cin>>time;
+            //cout<<"Enter Achievements"<<endl;
+            //cin>>ach;
+            //player -> addGame(ID,time,ach);
+            //cout<<"Add more?"<<endl;
+            //cin>> inp;
+          //}
           return player;
         }
         if (stringToInt(id) < stringToInt(root->playerID)) 
@@ -370,6 +369,37 @@ class DatabasePlayer
     return result;
    }
     
+    
+    float stringToFloat(string &str) {
+    float result = 0.0f;
+    float decimalPlace = 0.1f;
+    bool isNegative = false;
+    bool isFractionalPart = false;
+    
+    for (char ch : str) {
+        if (ch == '-') {
+            isNegative = true;
+        }
+        else if (ch == '.') {
+            isFractionalPart = true;
+        }
+        else if (ch >= '0' && ch <= '9') {
+            if (isFractionalPart) {
+                result += (ch - '0') * decimalPlace;
+                decimalPlace *= 0.1f;  // Move one place to the right in the decimal
+            }
+            else {
+                result = result * 10 + (ch - '0');  // Build the integer part
+            }
+        }
+    }
+
+    if (isNegative) {
+        result = -result;
+    }
+    
+    return result;
+}
     
     
     
@@ -625,30 +655,78 @@ class DatabasePlayer
     }
     
     
+    // load from csv
+    
+    
+    
+    void loadPlayersFromCSV() 
+    {
+        ifstream file("Players.txt");
+        if (!file.is_open()) {
+            cout << "Error opening file." << endl;
+            return;
+        }
+
+        string line;
+        while (getline(file, line)) {
+            // Generate random number from 0 to 1000 to decide if we should skip this line
+            int randomNum = rand() % 1001;
+            
+            if (randomNum < skipThreshold) {
+                // Skip this line (do not insert player)
+                continue;
+            }
+
+            // Process this line and add the player
+            stringstream ss(line);
+            string id, name, phone, email, password, gameid, hours, achiev;
+            getline(ss, id, ',');
+            getline(ss, name, ',');
+            getline(ss, phone, ',');
+            getline(ss, email, ',');
+            getline(ss, password, ',');
+
+            // Insert player into the BST
+            insertPlayer(id, name, phone, email, password);
+            
+            Player* player = searchPlayer(playerRoot, id);
+            
+            while (getline(ss, gameid, ',') && getline(ss, hours, ',') && getline(ss, achiev, ',')) {
+            // Convert hours and achievements from strings to int or float as needed
+            float hoursPlayed = stringToFloat(hours);
+            int achievementsUnlocked = stringToInt(achiev);
+
+            // Add game details to the player's game list
+            player->addGame(gameid, hoursPlayed, achievementsUnlocked);
+           }
+            
+        
+        }
+        
+        file.close();
+    }
+    
 };
 class DatabaseGame
 {
    private:
 
     Game *gameRoot = nullptr;
+    int skipThreshold;
     
-    
-    //function to generate custom seed
-    int generateSeed(string &rollNumber) 
+    public: 
+    //generating custom seed
+    DatabaseGame() 
     {
-      int seed = 0;
-      for (int i = 0; i < rollNumber.length(); ++i) 
-      {
-        char ch = rollNumber[i];
-        if (ch >= '0' && ch <= '9') 
-        {
-            seed = seed * 10 + (ch - '0');
-        }
-      }
-
-      return seed;
+      // Calculate the skip threshold based on roll number
+        int lastTwoDigits = 232552 % 100; 
+        skipThreshold = (lastTwoDigits * 10) + 100;
+        
+        // Seed random number generator with roll number
+        srand(232552);
     }  
     
+    private:
     //function to search game in the tree 
     Game* searchGame(Game* root, string id) 
     {
@@ -801,7 +879,36 @@ class DatabaseGame
     return result;
 }
     
+    float stringToFloat(string &str) {
+    float result = 0.0f;
+    float decimalPlace = 0.1f;
+    bool isNegative = false;
+    bool isFractionalPart = false;
     
+    for (char ch : str) {
+        if (ch == '-') {
+            isNegative = true;
+        }
+        else if (ch == '.') {
+            isFractionalPart = true;
+        }
+        else if (ch >= '0' && ch <= '9') {
+            if (isFractionalPart) {
+                result += (ch - '0') * decimalPlace;
+                decimalPlace *= 0.1f;  // Move one place to the right in the decimal
+            }
+            else {
+                result = result * 10 + (ch - '0');  // Build the integer part
+            }
+        }
+    }
+
+    if (isNegative) {
+        result = -result;
+    }
+    
+    return result;
+}
     
     public: 
      
@@ -936,18 +1043,59 @@ class DatabaseGame
         file.close();
     }
     
+    
+    void loadGamesFromCSV() 
+    {
+        ifstream file("Games.txt");
+        if (!file.is_open()) {
+            cout << "Error opening file." << endl;
+            return;
+        }
+
+        string line;
+        while (getline(file, line)) {
+            // Generate random number from 0 to 1000 to decide if we should skip this line
+            int randomNum = rand() % 1001;
+            
+            if (randomNum < skipThreshold) {
+                // Skip this line (do not insert game)
+                continue;
+            }
+
+            // Process this line and add the game
+            stringstream ss(line);
+            string id, name, develop, publish, size, download;
+            getline(ss, id, ',');
+            getline(ss, name, ',');
+            getline(ss, develop, ',');
+            getline(ss, publish, ',');
+            getline(ss, size, ',');
+            getline(ss, download, ',');
+
+            // Insert game into the BST
+            insertGame(id, name, develop, publish, stringToFloat(size), stringToInt(download));
+            
+        }
+        
+        file.close();
+    }
+    
+    
+    
 };
 int main()
 {
    DatabasePlayer db;
-
+   DatabaseGame db2;
     // Insert some players
-    db.insertPlayer("P001", "Alice", "1234567890", "alice@example.com", "password123");
-    db.insertPlayer("P002", "Bob", "0987654321", "bob@example.com", "password456");
-    db.insertPlayer("P003", "Charlie", "5555555555", "charlie@example.com", "password789");
-
+    //db.insertPlayer("P001", "Alice", "1234567890", "alice@example.com", "password123");
+    //db.insertPlayer("P002", "Bob", "0987654321", "bob@example.com", "password456");
+    //db.insertPlayer("P003", "Charlie", "5555555555", "charlie@example.com", "password789");
+    db.loadPlayersFromCSV();
     db.saveDatabaseToCSV();
    
+    db2.loadGamesFromCSV();
+    db2.saveDatabaseToCSV();
     // Show details of a player
     //cout << "\nShowing details of player P001:" << endl;
     //db.showDetails("P001");
