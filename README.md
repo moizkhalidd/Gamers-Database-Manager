@@ -81,7 +81,7 @@ The system starts by generating a unique seed based on the user's roll number to
 ### 12. **Has Played**
 
    - Determines if a player has played a specific game using Player ID and Game ID. Achieves a time complexity of at most 2 * log(n).
-   - **Time Complexity**: 2 * O(log n).
+   - **Time Complexity**: O(log n)/2 log n.
 
 ## Setup and Usage
 
@@ -106,4 +106,4 @@ The system starts by generating a unique seed based on the user's roll number to
 | Preorder Save to File  | O(n)            |
 | Show N Layers          | O(N)            |
 | Top N Players          | O(n log n)      |
-| Has Played             | 2 O(log n)      |
+| Has Played             | O(log n)/2log n |
