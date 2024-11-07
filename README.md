@@ -51,7 +51,7 @@ The system starts by generating a unique seed based on the user's roll number to
 ### 6. **Show N Layers**
 
    - **Description**: Displays all entries up to the Nth layer in the BST. If N exceeds the tree's height, a warning is shown.
-   - **Time Complexity**: O(N) for traversing up to N layers.
+   - **Time Complexity**: O(n) for traversing up to n layers.
 
 ### 7. **Show Layer Number**
 
@@ -76,7 +76,7 @@ The system starts by generating a unique seed based on the user's roll number to
 ### 11. **Show Details**
 
    - **Description**: Searches for a player and displays details of all games they have played.
-   - **Time Complexity**: O(log n) for player search, O(m) for displaying `m` games.
+   - **Time Complexity**: O(log n) for player search, O(n) for displaying `n` games.
 
 ### 12. **Has Played**
 
