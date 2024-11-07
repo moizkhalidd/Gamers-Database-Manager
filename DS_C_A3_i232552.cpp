@@ -432,12 +432,19 @@ class DatabasePlayer
     //structure to print top N players with most games played
     struct PlayerGamesCount 
     {
-        Player* player;
+        Player* player = nullptr;
         int gamesCount;
+        PlayerGamesCount * next =nullptr;
+        
+        PlayerGamesCount(Player* p, int c)
+        {
+           player = p;
+           gamesCount = c;
+        }
     };
     
     //function to count the number of games played by a player
-    void countGamesForPlayer(Player* player, PlayerGamesCount* playerCounts, int& index) 
+    void countGamesForPlayer(Player* player, PlayerGamesCount*& playerCounts) 
     {
         int gameCount = 0;
         GamesPlayed* game = player->gamesHead;
@@ -446,38 +453,96 @@ class DatabasePlayer
             gameCount++;
             game = game->next;
         }
-        playerCounts[index++] = {player, gameCount};
-    }
-
-    void inorderCollectPlayers(Player* root, PlayerGamesCount* playerCounts, int& index) 
-    {
-        if (!root) return;
-        inorderCollectPlayers(root->left, playerCounts, index);
-        countGamesForPlayer(root, playerCounts, index);
-        inorderCollectPlayers(root->right, playerCounts, index);
-    }
-
-    void sortPlayersByGames(PlayerGamesCount* playerCounts, int size) 
-    {
-        // Bubble sort algorithm 
-        for (int i = 0; i < size - 1; ++i) 
+        if(playerCounts == nullptr)
         {
-            for (int j = i + 1; j < size; ++j)
-            {
-                if (playerCounts[i].gamesCount < playerCounts[j].gamesCount) 
-                {
-                    // Swap manually
-                    PlayerGamesCount temp = playerCounts[i];
-                    playerCounts[i] = playerCounts[j];
-                    playerCounts[j] = temp;
-                }
-            }
+          playerCounts = new PlayerGamesCount(player, gameCount);
+        }
+        else
+        {
+           PlayerGamesCount* temp = playerCounts;
+           while(temp -> next != nullptr)
+           temp = temp ->next;
+           
+           temp->next = new PlayerGamesCount(player, gameCount);
         }
     }
+
+    void inorderCollectPlayers(Player* root, PlayerGamesCount*& playerCounts) 
+    {
+        if (!root) return;
+        inorderCollectPlayers(root->left, playerCounts);
+        countGamesForPlayer(root, playerCounts);
+        inorderCollectPlayers(root->right, playerCounts);
+    }
+
+   
+   
+     void sortPlayersByGames(PlayerGamesCount* head) 
+     {
+        PlayerGamesCount* current = head;
+        PlayerGamesCount* index = nullptr;
+        int temp;
+        Player* temp2= nullptr;
+     
+        while (current != nullptr) 
+        {
+            // Pointer to traverse the list from the current node
+            index = current->next;
+     
+            while (index != nullptr) 
+            {
+                // If the current node's gamesCount is less than the index node's gamesCount
+                if (current->gamesCount < index->gamesCount) 
+                {
+                    temp = current->gamesCount;
+                    temp2 = current->player;
+                    current->gamesCount = index->gamesCount;
+                    current->player = index->player;
+                    index->gamesCount = temp;
+                    index -> player = temp2;
+                }
+     
+                index = index->next;
+            }
+     
+            current = current->next;
+        }
+     }
     
     
     
     public: 
+       
+    void topNPlayers(int N) 
+    {
+        int totalPlayers = countNodes(playerRoot);
+        PlayerGamesCount* playerCounts = nullptr;
+
+        // Collect all players with their game counts
+        inorderCollectPlayers(playerRoot, playerCounts);
+
+        // Sort players by game count in descending order
+        sortPlayersByGames(playerCounts);
+
+        // Display the top N players
+        PlayerGamesCount* temp = playerCounts;
+        for (int i = 0; i < N && i < totalPlayers; ++i) 
+        {
+            cout << "Player ID: " << temp->player->playerID
+                 << ", Name: " << temp->player->playerName
+                 << ", Games Played: " << temp->gamesCount << endl;
+            
+            temp = temp -> next;
+        }
+
+    }
+
+    int countNodes(Player* root) 
+    {
+        if (!root) 
+        return 0;
+        return 1 + countNodes(root->left) + countNodes(root->right);
+    }
     
     void insertPlayer(string id, string name, string phone, string email, string password) 
     {
@@ -619,40 +684,7 @@ class DatabasePlayer
     }
 
     cout << endl;
-}
-
-    
-    
-    void topNPlayers(int N) 
-    {
-        int totalPlayers = countNodes(playerRoot);
-        PlayerGamesCount* playerCounts = new PlayerGamesCount[totalPlayers];
-        int index = 0;
-
-        // Collect all players with their game counts
-        inorderCollectPlayers(playerRoot, playerCounts, index);
-
-        // Sort players by game count in descending order
-        sortPlayersByGames(playerCounts, totalPlayers);
-
-        // Display the top N players
-        for (int i = 0; i < N && i < totalPlayers; ++i) 
-        {
-            cout << "Player ID: " << playerCounts[i].player->playerID
-                 << ", Name: " << playerCounts[i].player->playerName
-                 << ", Games Played: " << playerCounts[i].gamesCount << std::endl;
-        }
-
-        delete[] playerCounts;
-    }
-
-    int countNodes(Player* root) 
-    {
-        if (!root) 
-        return 0;
-        return 1 + countNodes(root->left) + countNodes(root->right);
-    }
-    
+   }   
     
      //function to store data in a csv file   
      void saveDataToCSV(Player* root, ofstream& file) 
@@ -1169,6 +1201,6 @@ class DatabaseGame
     } 
 };
 int main()
-{
+{ 
     return 0;
 }
