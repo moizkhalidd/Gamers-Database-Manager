@@ -689,6 +689,7 @@ class DatabasePlayer
      void deletePlayer(string id) 
      {
         playerRoot = deletePlayerHelper(playerRoot, id);
+        cout<<"Player Deleted"<<endl;
      }
      
      
@@ -747,7 +748,7 @@ class DatabasePlayer
     }
     
     //function to show N-Layers
-    void showNLayersHelper(int N) 
+    void showNLayers(int N) 
     {
       if (!playerRoot) 
       {
@@ -1135,6 +1136,7 @@ class DatabaseGame
     void deleteGame(string id) 
     {
         gameRoot = deleteGameHelper(gameRoot, id);
+        cout<<"Game Deleted"<<endl;
     }
     
     int showLayerNumber(string id)
@@ -1155,7 +1157,7 @@ class DatabaseGame
      }
      
      
-     void showNLayersHelper(int N) 
+     void showNLayers(int N) 
      {
         if (!gameRoot)
         {
@@ -1208,7 +1210,7 @@ class DatabaseGame
         cout << endl;
     }
     
-     void editEntry(string oldID, string newID, string newName, string newdev, string newPub, float newSize, int newDownload ) 
+     void editEntry(string oldID, string newID, string newName, string newdev, string newPub, float newSize, int newDownload) 
      {
         Game* nodeToEdit = searchGame(gameRoot, oldID);
 
@@ -1311,14 +1313,44 @@ class DatabaseGame
 };
 int main()
 { 
-    DatabasePlayer db;
+    DatabasePlayer player;
+    DatabaseGame game;
     
-    db.loadPlayersFromCSV();
-    db.saveDatabaseToCSV() ;
-    //db.topNPlayers(20);
-    db.showDetails("4560668132");
+    player.loadPlayersFromCSV();
+    game.loadGamesFromCSV();
     
-    cout<<db.gameAndPlayer("456068132", "3703607818")<<endl;
+    player.insertPlayer("23i2552", "Patrick", "0333567965", "2552@gmail.com", "ok1234ok");
+    game.insertGame("2556634", "Patrick", "IBM", "DAWN", 12.3445, 25);
+    
+    player.deletePlayer("23i2552");
+    game.deleteGame("2556634");
+    
+    player.searchPlayer("3094117614");
+    game.searchGame("5673396505");
+    
+    player.saveDatabaseToCSV();
+    game.saveDatabaseToCSV();
+    
+    player.showNLayers(3);
+    game.showNLayers(3);
+    
+    cout<<endl;
+    cout<<player.showLayerNumber("3094117614")<<endl;
+    cout<<game.showLayerNumber("5673396505")<<endl;
+    cout<<endl;
+    
+    player.showPath("3094117614");
+    game.showPath("5673396505");
+    
+    cout<<endl;
+    player.topNPlayers(5);
+    
+    player.showDetails("3094117614");
+    
+    if(player.gameAndPlayer("3094117614", "5673396505"))
+    cout<<"PlayerID: 3094117614 has played GameID: 5673396505"<<endl;
+    else
+    cout<<"PlayerID: 3094117614 has not played GameID: 5673396505"<<endl;
     
     return 0;
 }
