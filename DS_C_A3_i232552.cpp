@@ -11,7 +11,8 @@ struct GamesPlayed
     string gameID;
     float hoursPlayed;
     int achievementsUnlocked;
-    GamesPlayed *next = nullptr;
+    GamesPlayed *left = nullptr;
+    GamesPlayed *right = nullptr;
    
     //constructor
     GamesPlayed(string id, float hours, int achievements)
@@ -20,6 +21,55 @@ struct GamesPlayed
        hoursPlayed = hours;
        achievementsUnlocked = achievements; 
     }
+    
+    //function to display games
+    void displayGamesInOrder(GamesPlayed* game) 
+    {
+        if (game == nullptr) 
+        {
+          return;
+        }
+    
+      // Display current game
+      cout << "- Game ID: " << game->gameID
+           << ", Hours Played: " << game->hoursPlayed
+           << ", Achievements Unlocked: " << game->achievementsUnlocked << endl;
+      
+      // Traverse left subtree
+      displayGamesInOrder(game->left);
+      // Traverse right subtree
+      displayGamesInOrder(game->right);
+    }
+    
+    //function to count total number of games
+    int countGames(GamesPlayed* game) 
+    {
+        if (game == nullptr) 
+        {
+          return 0;
+        }
+
+       return 1 + countGames(game->left) + countGames(game->right);
+   }
+   
+   //function to write in file using preorder
+   void writeGamesPreorder(GamesPlayed* game, ofstream& file) 
+   {
+      if (game == nullptr) 
+      {
+        return;
+      }
+
+      file << "," << game->gameID
+           << "," << game->hoursPlayed
+           << "," << game->achievementsUnlocked;
+
+      // Traverse left subtree
+      writeGamesPreorder(game->left, file);
+
+      // Traverse right subtree
+      writeGamesPreorder(game->right, file);
+   }
         
 };
 //structure for game node
@@ -65,46 +115,106 @@ struct Player
        password = pass;
     }
     
+     //function to change string to integer
+    int stringToInt(string& str) 
+    {
+  
+    int result = 0;
+    bool isNegative = false;
+    int startIndex = 0;
+
+    // Check if the string has a negative sign
+    if (str[0] == '-') 
+    {
+        isNegative = true;
+        // Start from the next character
+        startIndex = 1; 
+    }
+
+    for (int i = startIndex; i < str.length(); ++i) 
+    {
+        char ch = str[i];
+
+        // Update result by shifting the existing digits left and adding the new digit
+        if (ch >= '0' && ch <= '9')
+        result = result * 10 + (ch - '0');
+    }
+
+    // Apply negative sign if necessary
+    if (isNegative) 
+    {
+        result = -result;
+    }
+    
+    return result;
+   }
+    
     //function to add game to the game played list for the player 
-    //needs fixing by creating a separate tree for games played
     void addGame(string gameID, float hours, int achievements) 
     {   
-        if(searchGame(gameID) != nullptr)
+        if (searchGame(gameID) != nullptr) 
         {
-         cout<<"ID already exists"<<endl;
-         return;
+           cout << "ID already exists" << endl;
+           return;
         }
-        
+
         GamesPlayed *newGame = new GamesPlayed(gameID, hours, achievements);
-        if(gamesHead == nullptr)
-        gamesHead = newGame;
-        else
+   
+        if (gamesHead == nullptr) 
         {
-             GamesPlayed *temp = gamesHead;
-             while(temp -> next!= nullptr)
-             {
-               temp = temp -> next;
-             }       
-              temp -> next = newGame;
+            gamesHead = newGame;
+        } 
+        else 
+        {
+            GamesPlayed *current = gamesHead;
+            GamesPlayed *parent = nullptr;
+
+            while (current != nullptr) 
+            {
+                parent = current;
+                if (stringToInt(gameID) < stringToInt(current->gameID)) 
+                {
+                    current = current->left;
+                } 
+                else 
+                {
+                    current = current->right;
+                }
+            }
+
+            if (stringToInt(gameID) < stringToInt(parent->gameID)) 
+            {
+                parent->left = newGame;
+            } 
+            else
+            {
+                parent->right = newGame;
+            }
         }
     }
     
     //function to check if the game ID already exists
     GamesPlayed* searchGame(string id) 
     {
-        if (!gamesHead) 
-        return gamesHead;
-        
-        GamesPlayed *temp = gamesHead;
-        while(temp != nullptr)
-        { 
-          if(temp -> gameID == id)
-          return temp;
-          
-          temp = temp -> next;
+        GamesPlayed *current = gamesHead;
+    
+        while (current != nullptr) 
+        {
+            if (current->gameID == id) 
+            {
+              return current;  // Found the game with matching ID
+            }
+            else if (stringToInt(id) < stringToInt(current->gameID)) 
+            {
+               current = current->left;  // Search in the left subtree
+            } 
+            else 
+            {
+               current = current->right; // Search in the right subtree
+            }
         }
-        
-        return temp;
+    
+       return nullptr;
     }
     
 };
@@ -343,13 +453,7 @@ class DatabasePlayer
 
       GamesPlayed* game = player->gamesHead;
       cout << "Games Played:\n";
-      while (game) 
-      {
-          cout << "- Game ID: " << game->gameID
-               << ", Hours Played: " << game->hoursPlayed
-               << ", Achievements Unlocked: " << game->achievementsUnlocked << endl;
-          game = game->next;
-      }
+      game->displayGamesInOrder(player->gamesHead);
     }
     
     
@@ -448,11 +552,7 @@ class DatabasePlayer
     {
         int gameCount = 0;
         GamesPlayed* game = player->gamesHead;
-        while (game) 
-        {
-            gameCount++;
-            game = game->next;
-        }
+        gameCount = game->countGames(game);
         if(playerCounts == nullptr)
         {
           playerCounts = new PlayerGamesCount(player, gameCount);
@@ -512,6 +612,20 @@ class DatabasePlayer
     
     
     public: 
+    
+    
+    bool gameAndPlayer(string playerId, string gameId)
+    {
+      Player* player = searchPlayer(playerId);
+      if(player == nullptr)
+      return 0;
+      
+      if(player->searchGame(gameId) == nullptr)
+      return 0;
+      else
+      return 1;
+    
+    }
        
     void topNPlayers(int N) 
     {
@@ -562,7 +676,7 @@ class DatabasePlayer
         Player* player = searchPlayer(playerRoot, id);
         if (player == nullptr) 
         {
-            cout << "Error: Game with ID " << id << " does not exists.\n";
+            cout << "Error: Player with ID " << id << " does not exists.\n";
             return player;
         }
         
@@ -639,7 +753,7 @@ class DatabasePlayer
       {
         cout << "Tree is empty." << endl;
         return;
-    }
+      }
 
     // Linked list-based queue
     Queue queue;
@@ -701,12 +815,7 @@ class DatabasePlayer
 
         // Writing game details (Game ID, Hours Played, Achievements)
         GamesPlayed* game = root->gamesHead;
-        while (game != nullptr) {
-            file << "," << game->gameID
-                 << "," << game->hoursPlayed
-                 << "," << game->achievementsUnlocked;
-            game = game->next;
-        }
+        game->writeGamesPreorder(game,file);
         file << endl;
 
         // Recur for left and right children
@@ -1202,5 +1311,14 @@ class DatabaseGame
 };
 int main()
 { 
+    DatabasePlayer db;
+    
+    db.loadPlayersFromCSV();
+    db.saveDatabaseToCSV() ;
+    //db.topNPlayers(20);
+    db.showDetails("4560668132");
+    
+    cout<<db.gameAndPlayer("456068132", "3703607818")<<endl;
+    
     return 0;
 }
